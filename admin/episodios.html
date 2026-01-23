@@ -268,6 +268,39 @@
                     </div>
                 </div>
 
+                <!-- Upload de Material de Apoio -->
+                <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Material de Apoio (PDF, ZIP,
+                        etc.)</label>
+
+                    <div class="flex gap-2">
+                        <label class="flex-1 cursor-pointer">
+                            <span
+                                class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl py-4 text-slate-400 transition-all group">
+                                <span class="material-symbols-outlined group-hover:text-white">folder_zip</span>
+                                <span class="group-hover:text-white text-xs" id="material-filename">Clique para
+                                    selecionar arquivo</span>
+                            </span>
+                            <input type="file" id="material-file" class="hidden"
+                                onchange="handleFileSelect(this, 'material')">
+                        </label>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div id="material-progress" class="hidden w-full bg-slate-800 rounded-full h-1.5 mb-2 mt-2">
+                        <div class="bg-aec-pink h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <input type="url" id="material_url"
+                            class="bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-500"
+                            placeholder="URL do arquivo" readonly>
+                        <input type="text" id="material_nome"
+                            class="bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-xs text-white"
+                            placeholder="Nome do arquivo (ex: Slides da Aula)">
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Duração (segundos)</label>
@@ -431,6 +464,12 @@
                     document.getElementById('image-placeholder').classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
+            } else if (type === 'material') {
+                document.getElementById('material-filename').textContent = file.name;
+                // Auto-fill name if empty
+                if (!document.getElementById('material_nome').value) {
+                    document.getElementById('material_nome').value = file.name;
+                }
             }
         }
 
@@ -463,6 +502,8 @@
             document.getElementById('descricao').value = episodio?.descricao || '';
             document.getElementById('audio_url').value = episodio?.audio_url || '';
             document.getElementById('imagem_url').value = episodio?.imagem_url || '';
+            document.getElementById('material_url').value = episodio?.material_apoio_url || '';
+            document.getElementById('material_nome').value = episodio?.material_apoio_nome || '';
             document.getElementById('duracao_segundos').value = episodio?.duracao_segundos || '';
             document.getElementById('status').value = episodio?.status || 'rascunho';
             document.getElementById('ordem').value = episodio?.ordem || 0;
@@ -481,9 +522,13 @@
                 document.getElementById('image-placeholder').classList.remove('hidden');
             }
 
+            document.getElementById('material-file').value = '';
+            document.getElementById('material-filename').textContent = episodio?.material_apoio_url ? 'Arquivo já cadastrado' : 'Clique para selecionar arquivo';
+
             // Hide progress bars
             document.getElementById('audio-progress').classList.add('hidden');
             document.getElementById('image-progress').classList.add('hidden');
+            document.getElementById('material-progress').classList.add('hidden');
 
             document.getElementById('modal').classList.remove('hidden');
         }
@@ -516,9 +561,11 @@
                 // HANDLE UPLOADS FIRST
                 const audioFile = document.getElementById('audio-file').files[0];
                 const imageFile = document.getElementById('image-file').files[0];
+                const materialFile = document.getElementById('material-file').files[0];
 
                 let audioUrl = document.getElementById('audio_url').value;
                 let imageUrl = document.getElementById('imagem_url').value;
+                let materialUrl = document.getElementById('material_url').value;
 
                 if (audioFile) {
                     submitBtn.textContent = 'Enviando Áudio...';
@@ -538,6 +585,14 @@
                     document.querySelector('#image-progress div').style.width = '100%';
                 }
 
+                if (materialFile) {
+                    submitBtn.textContent = 'Enviando Material...';
+                    document.getElementById('material-progress').classList.remove('hidden');
+                    document.querySelector('#material-progress div').style.width = '50%';
+                    materialUrl = await uploadFile(materialFile, 'materiais');
+                    document.querySelector('#material-progress div').style.width = '100%';
+                }
+
                 // SAVE TO DB
                 submitBtn.textContent = 'Salvando Dados...';
 
@@ -548,6 +603,8 @@
                     descricao: document.getElementById('descricao').value,
                     audio_url: audioUrl || null,
                     imagem_url: imageUrl || null,
+                    material_apoio_url: materialUrl || null,
+                    material_apoio_nome: document.getElementById('material_nome').value || null,
                     duracao_segundos: parseInt(document.getElementById('duracao_segundos').value) || 0,
                     status: document.getElementById('status').value,
                     ordem: parseInt(document.getElementById('ordem').value) || 0

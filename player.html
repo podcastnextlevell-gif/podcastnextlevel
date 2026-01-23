@@ -445,10 +445,20 @@
             const display = document.getElementById('content-display');
             display.innerHTML = `
             <div class="animate-fade-in">
-                <div class="inline-flex items-center gap-2 w-fit px-3 py-1 bg-aec-pink/20 text-aec-pink border border-aec-pink/30 rounded-full text-xs font-bold mb-6">
-                    <span class="w-2 h-2 rounded-full bg-aec-pink animate-pulse"></span>
-                    Episódio ${index + 1}
+                <div class="flex items-center justify-between mb-6">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-aec-pink/20 text-aec-pink border border-aec-pink/30 rounded-full text-xs font-bold">
+                        <span class="w-2 h-2 rounded-full bg-aec-pink animate-pulse"></span>
+                        Episódio ${index + 1}
+                    </div>
+                    
+                    ${ep.material_apoio_url ? `
+                        <a href="${ep.material_apoio_url}" target="_blank" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors border border-slate-700">
+                            <span class="material-symbols-outlined text-sm">download</span>
+                            ${ep.material_apoio_nome || 'Material de Apoio'}
+                        </a>
+                    ` : ''}
                 </div>
+
                 <h1 class="text-3xl font-bold mb-4">${ep.titulo}</h1>
                 <div class="prose prose-invert max-w-none">
                     <p class="text-slate-300 leading-relaxed whitespace-pre-wrap">${ep.descricao || 'Sem descrição disponível.'}</p>
@@ -515,12 +525,14 @@
             completedTracks.add(ep.id);
 
             // Save progress to database
-            await supabase.from('progresso_usuario').upsert({
+            const { error } = await supabaseClient.from('progresso_usuario').upsert({
                 usuario_id: userProfile.id,
                 episodio_id: ep.id,
                 completado: true,
                 tempo_assistido: ep.duracao_segundos || 0
             }, { onConflict: 'usuario_id,episodio_id' });
+
+            if (error) console.error('Erro ao salvar progresso:', error);
 
             renderPlaylist();
 

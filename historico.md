@@ -82,9 +82,10 @@
 
 ## 🔧 PENDÊNCIAS / PRÓXIMOS PASSOS
 
-### 1. Upload de Arquivos (Storage)
-- Criar bucket `audios` e `imagens` no Supabase Storage.
-- Implementar upload no `admin/episodios.html` (frontend já preparado, falta integração JS).
+### 1. Upload de Arquivos (Storage) - ✅ Concluído
+- Criados buckets `audios` e `imagens` no Supabase Storage.
+- Implementado upload no `admin/episodios.html` e `admin/temporadas.html`.
+- Configurado RLS para segurança dos arquivos.
 
 ### 2. Testes de Fluxo
 - Testar fluxo completo de usuário comum (Cadastro -> Aprovação -> Acesso -> Prova).
