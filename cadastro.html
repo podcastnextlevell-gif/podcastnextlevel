@@ -206,8 +206,10 @@
                 <div class="flex items-start gap-3">
                     <input type="checkbox" id="terms" required class="w-5 h-5 accent-aec-pink rounded mt-0.5">
                     <label for="terms" class="text-sm text-slate-400 cursor-pointer">
-                        Concordo com os <a href="#" class="text-aec-pink hover:underline">Termos de Uso</a> e
-                        <a href="#" class="text-aec-pink hover:underline">Política de Privacidade</a>
+                        Concordo com os <button type="button" onclick="openModal('terms')"
+                            class="text-aec-pink hover:underline">Termos de Uso</button> e
+                        <button type="button" onclick="openModal('privacy')"
+                            class="text-aec-pink hover:underline">Política de Privacidade</button>
                     </label>
                 </div>
 
@@ -244,6 +246,37 @@
         </div>
     </div>
 
+    <!-- Modals Overlay -->
+    <div id="legal-modal-overlay"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        onclick="closeLegalModal()">
+        <!-- Modal Content Container -->
+        <div class="relative glass-panel rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl border border-slate-700"
+            onclick="event.stopPropagation()">
+
+            <!-- Header -->
+            <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50 rounded-t-2xl">
+                <h3 id="legal-modal-title" class="text-xl font-bold text-white">Titulo</h3>
+                <button onclick="closeLegalModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div id="legal-modal-content" class="p-8 overflow-y-auto text-slate-300 text-sm leading-relaxed space-y-4">
+                <!-- Content injected via JS -->
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-slate-700 bg-slate-900/50 rounded-b-2xl text-right">
+                <button onclick="closeLegalModal()"
+                    class="bg-aec-pink hover:bg-aec-pinkDark text-white px-6 py-2 rounded-lg font-bold transition-all">
+                    Entendi
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
     <script>
@@ -258,6 +291,70 @@
                 input.type = 'password';
                 icon.textContent = 'visibility';
             }
+        }
+
+        // --- Legal Modals System ---
+
+        const legalTexts = {
+            terms: `
+                <h4 class="text-white font-bold text-lg mb-2">1. Introdução</h4>
+                <p>Bem-vindo ao <strong>Next Level Podcast</strong>. Esta plataforma é de uso exclusivo para colaboradores e parceiros autorizados. Ao criar sua conta, você concorda em utilizar este serviço para fins de desenvolvimento profissional e educacional.</p>
+                
+                <h4 class="text-white font-bold text-lg mb-2 mt-4">2. Propriedade Intelectual</h4>
+                <p>Todo o conteúdo disponibilizado (áudios, textos, imagens, provas e materiais de apoio) é protegido por direitos autorais e pertence à organização. É estritamente <strong>proibido</strong> compartilhar, copiar, distribuir ou vender qualquer material desta plataforma para terceiros fora da organização.</p>
+                
+                <h4 class="text-white font-bold text-lg mb-2 mt-4">3. Conduta do Usuário</h4>
+                <p>Esperamos um ambiente de respeito e colaboração. Não serão tolerados:</p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>Comentários ofensivos, discriminatórios ou assédio.</li>
+                    <li>Tentativas de fraudar o sistema de pontuação ou avaliações.</li>
+                    <li>Compartilhamento de senha com outros usuários.</li>
+                </ul>
+                
+                <h4 class="text-white font-bold text-lg mb-2 mt-4">4. Cancelamento e Penalidades</h4>
+                <p>A administração reserva-se o direito de suspender ou cancelar contas que violem estes termos. Infrações graves podem acarretar medidas administrativas conforme as normas internas da empresa.</p>
+                
+                <h4 class="text-white font-bold text-lg mb-2 mt-4">5. Certificação</h4>
+                <p>Os certificados emitidos são documentos internos de comprovação de competência técnica e engajamento. A veracidade das informações (carga horária, notas) é garantida pelo sistema.</p>
+            `,
+            privacy: `
+                <h4 class="text-white font-bold text-lg mb-2">1. Coleta de Dados</h4>
+                <p>Para o funcionamento da plataforma, coletamos os seguintes dados pessoais:</p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>Nome Completo e Nickname (Apelido).</li>
+                    <li>Endereço de e-mail corporativo ou pessoal.</li>
+                    <li>Cargo e Área de Atuação.</li>
+                    <li>Dados de navegação e progresso nos cursos (episódios assistidos, notas em provas).</li>
+                </ul>
+
+                <h4 class="text-white font-bold text-lg mb-2 mt-4">2. Finalidade do Uso dos Dados</h4>
+                <p>Seus dados são utilizados exclusivamente para:</p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>Gerar seu perfil e histórico de aprendizado.</li>
+                    <li>Emitir certificados nominais.</li>
+                    <li>Alimentar o Ranking de Gamificação (apenas Nickname e Pontos são públicos).</li>
+                    <li>Relatórios gerenciais para acompanhamento de treinamento pela liderança.</li>
+                </ul>
+
+                <h4 class="text-white font-bold text-lg mb-2 mt-4">3. Compartilhamento</h4>
+                <p>Seus dados <strong>não</strong> são vendidos ou compartilhados com empresas de marketing externas. O acesso é restrito à equipe de Administração da plataforma e Gestores diretos para fins de avaliação de desempenho.</p>
+
+                <h4 class="text-white font-bold text-lg mb-2 mt-4">4. Segurança</h4>
+                <p>Utilizamos tecnologias modernas de criptografia e autenticação segura (Supabase Auth) para proteger suas informações contra acesso não autorizado.</p>
+            `
+        };
+
+        function openModal(type) {
+            const title = type === 'terms' ? 'Termos de Uso' : 'Política de Privacidade';
+            const content = legalTexts[type];
+
+            document.getElementById('legal-modal-title').textContent = title;
+            document.getElementById('legal-modal-content').innerHTML = content;
+            document.getElementById('legal-modal-overlay').classList.remove('hidden');
+        }
+
+        function closeLegalModal() {
+            document.getElementById('legal-modal-overlay').classList.add('hidden');
         }
 
         // Handle form submit
