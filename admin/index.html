@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Painel Admin | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-link {
+            @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all;
+        }
+
+        .sidebar-link.active {
+            @apply text-white bg-aec-pink/20 border border-aec-pink/30;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen font-sans">
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50">
+            <!-- Logo -->
+            <div class="p-6 border-b border-slate-800">
+                <a href="../index.html" class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-aec-pink text-2xl">podcasts</span>
+                    <span class="font-bold">Next <span class="gradient-text">Level</span></span>
+                </a>
+                <p class="text-xs text-slate-500 mt-1">Painel Administrativo</p>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="index.html" class="sidebar-link active">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+                <a href="usuarios.html" class="sidebar-link">
+                    <span class="material-symbols-outlined">group</span>
+                    Usuários
+                    <span id="badge-pendentes"
+                        class="hidden ml-auto px-2 py-0.5 bg-yellow-500 text-black text-xs font-bold rounded-full"></span>
+                </a>
+                <a href="temporadas.html" class="sidebar-link">
+                    <span class="material-symbols-outlined">subscriptions</span>
+                    Temporadas
+                </a>
+                <a href="episodios.html" class="sidebar-link">
+                    <span class="material-symbols-outlined">headphones</span>
+                    Episódios
+                </a>
+                <a href="provas.html" class="sidebar-link">
+                    <span class="material-symbols-outlined">quiz</span>
+                    Provas
+                </a>
+                <a href="certificados.html" class="sidebar-link">
+                    <span class="material-symbols-outlined">workspace_premium</span>
+                    Certificados
+                </a>
+            </nav>
+
+            <!-- User Info -->
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-aec-pink/20 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-aec-pink">admin_panel_settings</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="admin-name" class="text-sm font-medium truncate">Admin</p>
+                        <p class="text-xs text-slate-500">Administrador</p>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-red-400 transition-colors" title="Sair">
+                        <span class="material-symbols-outlined">logout</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="ml-64 flex-1 p-8 min-h-screen">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold">Dashboard</h1>
+                <p class="text-slate-400">Visão geral da plataforma</p>
+            </header>
+
+            <!-- Stats Grid -->
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-400 text-sm">Total de Usuários</span>
+                        <span class="material-symbols-outlined text-blue-400">group</span>
+                    </div>
+                    <p id="stat-usuarios" class="text-3xl font-bold">0</p>
+                    <p id="stat-usuarios-sub" class="text-xs text-slate-500 mt-1">-</p>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-400 text-sm">Pendentes</span>
+                        <span class="material-symbols-outlined text-yellow-400">hourglass_top</span>
+                    </div>
+                    <p id="stat-pendentes" class="text-3xl font-bold text-yellow-400">0</p>
+                    <a href="usuarios.html?status=pendente" class="text-xs text-aec-pink hover:underline">Ver lista
+                        →</a>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-400 text-sm">Temporadas Ativas</span>
+                        <span class="material-symbols-outlined text-green-400">subscriptions</span>
+                    </div>
+                    <p id="stat-temporadas" class="text-3xl font-bold">0</p>
+                    <p id="stat-episodios" class="text-xs text-slate-500 mt-1">- episódios publicados</p>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-400 text-sm">Certificados Emitidos</span>
+                        <span class="material-symbols-outlined text-purple-400">workspace_premium</span>
+                    </div>
+                    <p id="stat-certificados" class="text-3xl font-bold">0</p>
+                    <p id="stat-media" class="text-xs text-slate-500 mt-1">Média: -</p>
+                </div>
+            </section>
+
+            <!-- Two Column Layout -->
+            <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Usuários Pendentes -->
+                <section class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-yellow-400">pending</span>
+                            Aguardando Aprovação
+                        </h2>
+                        <a href="usuarios.html?status=pendente" class="text-xs text-aec-pink hover:underline">Ver
+                            todos</a>
+                    </div>
+
+                    <div id="pendentes-list" class="space-y-3">
+                        <div class="text-center py-8 text-slate-500">
+                            <span class="material-symbols-outlined text-3xl mb-2">check_circle</span>
+                            <p class="text-sm">Nenhum usuário pendente</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Top Ranking -->
+                <section class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-aec-pink">leaderboard</span>
+                            Top 5 Ranking
+                        </h2>
+                        <a href="../ranking.html" class="text-xs text-aec-pink hover:underline">Ver completo</a>
+                    </div>
+
+                    <div id="ranking-list" class="space-y-3">
+                        <div class="text-center py-8 text-slate-500">
+                            <span class="material-symbols-outlined text-3xl mb-2">emoji_events</span>
+                            <p class="text-sm">Nenhum usuário ranqueado</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Recent Activity -->
+            <section class="mt-6 glass-panel rounded-2xl p-6">
+                <h2 class="font-bold flex items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-blue-400">history</span>
+                    Atividade Recente
+                </h2>
+
+                <div id="activity-list" class="space-y-3">
+                    <div class="text-center py-8 text-slate-500">
+                        <span class="material-symbols-outlined text-3xl mb-2">schedule</span>
+                        <p class="text-sm">Nenhuma atividade recente</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        async function init() {
+            // Verificar se é admin
+            const canAccess = await protectAdminPage();
+            if (!canAccess) return;
+
+            const profile = await getUserProfile();
+            if (profile) {
+                document.getElementById('admin-name').textContent = profile.nickname;
+            }
+
+            await loadDashboardData();
+        }
+
+        async function loadDashboardData() {
+            // Carregar estatísticas de usuários
+            const { data: usuarios } = await supabase
+                .from('usuarios')
+                .select('id, status');
+
+            if (usuarios) {
+                const total = usuarios.length;
+                const pendentes = usuarios.filter(u => u.status === 'pendente').length;
+                const aprovados = usuarios.filter(u => u.status === 'aprovado').length;
+
+                document.getElementById('stat-usuarios').textContent = total;
+                document.getElementById('stat-usuarios-sub').textContent = `${aprovados} aprovados`;
+                document.getElementById('stat-pendentes').textContent = pendentes;
+
+                // Badge no menu
+                const badge = document.getElementById('badge-pendentes');
+                if (pendentes > 0) {
+                    badge.textContent = pendentes;
+                    badge.classList.remove('hidden');
+                }
+            }
+
+            // Temporadas e episódios
+            const { data: temporadas } = await supabase
+                .from('temporadas')
+                .select('id, status');
+
+            const { data: episodios } = await supabase
+                .from('episodios')
+                .select('id, status');
+
+            if (temporadas) {
+                document.getElementById('stat-temporadas').textContent = temporadas.filter(t => t.status === 'ativa').length;
+            }
+
+            if (episodios) {
+                document.getElementById('stat-episodios').textContent = `${episodios.filter(e => e.status === 'publicado').length} episódios publicados`;
+            }
+
+            // Certificados e média
+            const { data: certificados } = await supabase
+                .from('certificados')
+                .select('nota');
+
+            if (certificados) {
+                document.getElementById('stat-certificados').textContent = certificados.length;
+                if (certificados.length > 0) {
+                    const media = (certificados.reduce((sum, c) => sum + parseFloat(c.nota), 0) / certificados.length).toFixed(1);
+                    document.getElementById('stat-media').textContent = `Média: ${media}`;
+                }
+            }
+
+            // Usuários pendentes
+            await loadPendentes();
+
+            // Ranking
+            await loadRanking();
+
+            // Atividade recente
+            await loadActivity();
+        }
+
+        async function loadPendentes() {
+            const container = document.getElementById('pendentes-list');
+
+            const { data: pendentes } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('status', 'pendente')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (!pendentes?.length) return;
+
+            container.innerHTML = '';
+
+            for (const user of pendentes) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-slate-800/50 rounded-xl';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-yellow-400">person</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-sm">${user.nome_completo}</p>
+                            <p class="text-xs text-slate-500">${user.email}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="aprovar('${user.id}')" class="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors" title="Aprovar">
+                            <span class="material-symbols-outlined text-sm">check</span>
+                        </button>
+                        <button onclick="reprovar('${user.id}')" class="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors" title="Reprovar">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        async function aprovar(userId) {
+            const { error } = await supabase
+                .from('usuarios')
+                .update({ status: 'aprovado' })
+                .eq('id', userId);
+
+            if (error) {
+                alert('Erro ao aprovar usuário');
+                return;
+            }
+
+            showToast('Usuário aprovado com sucesso!', 'success');
+            await loadDashboardData();
+        }
+
+        async function reprovar(userId) {
+            if (!confirm('Tem certeza que deseja reprovar este usuário?')) return;
+
+            const { error } = await supabase
+                .from('usuarios')
+                .update({ status: 'reprovado' })
+                .eq('id', userId);
+
+            if (error) {
+                alert('Erro ao reprovar usuário');
+                return;
+            }
+
+            showToast('Usuário reprovado', 'warning');
+            await loadDashboardData();
+        }
+
+        async function loadRanking() {
+            const container = document.getElementById('ranking-list');
+
+            const { data: ranking } = await supabase
+                .from('usuarios')
+                .select('nickname, pontuacao_total')
+                .eq('status', 'aprovado')
+                .gt('pontuacao_total', 0)
+                .order('pontuacao_total', { ascending: false })
+                .limit(5);
+
+            if (!ranking?.length) return;
+
+            container.innerHTML = '';
+
+            const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+            ranking.forEach((user, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-slate-800/50 rounded-xl';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${medals[index]}</span>
+                        <span class="font-medium">${user.nickname}</span>
+                    </div>
+                    <span class="text-aec-pink font-bold">${user.pontuacao_total} pts</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function loadActivity() {
+            const container = document.getElementById('activity-list');
+
+            // Buscar tentativas recentes
+            const { data: tentativas } = await supabase
+                .from('tentativas_prova')
+                .select('*, usuarios(nickname), provas(titulo)')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (!tentativas?.length) return;
+
+            container.innerHTML = '';
+
+            for (const t of tentativas) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-4 p-3 bg-slate-800/30 rounded-xl';
+                div.innerHTML = `
+                    <div class="w-10 h-10 ${t.aprovado ? 'bg-green-500/20' : 'bg-red-500/20'} rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined ${t.aprovado ? 'text-green-400' : 'text-red-400'}">${t.aprovado ? 'check' : 'close'}</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm"><strong>${t.usuarios?.nickname || 'Usuário'}</strong> ${t.aprovado ? 'completou' : 'tentou'} a prova "<em>${t.provas?.titulo || 'Prova'}</em>"</p>
+                        <p class="text-xs text-slate-500">${formatDateTime(t.created_at)} • Nota: ${t.nota}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = '../index.html';
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

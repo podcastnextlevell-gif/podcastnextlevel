@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Dashboard | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ec4899;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen font-sans">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-aec-pink text-2xl">podcasts</span>
+                    <span class="font-bold">Next <span class="gradient-text">Level</span></span>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <a href="ranking.html"
+                        class="text-slate-400 hover:text-white text-sm flex items-center gap-1 transition-colors">
+                        <span class="material-symbols-outlined text-lg">leaderboard</span>
+                        Ranking
+                    </a>
+                    <div class="h-6 w-px bg-slate-700"></div>
+                    <div id="user-info" class="flex items-center gap-3">
+                        <span id="user-nickname" class="text-sm text-slate-300"></span>
+                        <button onclick="logout()" class="text-slate-400 hover:text-red-400 transition-colors"
+                            title="Sair">
+                            <span class="material-symbols-outlined">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Welcome Section -->
+        <section class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">Olá, <span id="welcome-name" class="gradient-text">...</span>!</h1>
+            <p class="text-slate-400">Continue sua jornada de aprendizado.</p>
+        </section>
+
+        <!-- Stats Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-aec-pink/20 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-aec-pink text-2xl">stars</span>
+                    </div>
+                    <div>
+                        <p id="stat-pontos" class="text-2xl font-bold">0</p>
+                        <p class="text-slate-400 text-xs">Pontos Totais</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-purple-400 text-2xl">leaderboard</span>
+                    </div>
+                    <div>
+                        <p id="stat-ranking" class="text-2xl font-bold">#-</p>
+                        <p class="text-slate-400 text-xs">Posição Ranking</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-green-400 text-2xl">workspace_premium</span>
+                    </div>
+                    <div>
+                        <p id="stat-certificados" class="text-2xl font-bold">0</p>
+                        <p class="text-slate-400 text-xs">Certificados</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-blue-400 text-2xl">headphones</span>
+                    </div>
+                    <div>
+                        <p id="stat-episodios" class="text-2xl font-bold">0</p>
+                        <p class="text-slate-400 text-xs">Episódios Completos</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Temporadas Section -->
+        <section class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">Temporadas Disponíveis</h2>
+            </div>
+
+            <div id="temporadas-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loading skeleton -->
+                <div class="glass-panel rounded-2xl overflow-hidden animate-pulse">
+                    <div class="h-40 bg-slate-800"></div>
+                    <div class="p-5 space-y-3">
+                        <div class="h-4 bg-slate-800 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-800 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Meus Certificados -->
+        <section>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">Meus Certificados</h2>
+            </div>
+
+            <div id="certificados-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-panel rounded-2xl p-8 text-center">
+                    <span class="material-symbols-outlined text-4xl text-slate-600 mb-3">workspace_premium</span>
+                    <p class="text-slate-400 text-sm">Complete temporadas para receber certificados</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let userProfile = null;
+
+        async function init() {
+            // Verificar autenticação
+            const user = await getUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Buscar perfil
+            userProfile = await getUserProfile();
+            if (!userProfile) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Verificar status
+            if (userProfile.status === 'pendente') {
+                window.location.href = 'pendente.html';
+                return;
+            }
+
+            if (userProfile.status === 'reprovado') {
+                window.location.href = 'reprovado.html';
+                return;
+            }
+
+            // Redirecionar admin
+            if (userProfile.is_admin) {
+                window.location.href = 'admin/index.html';
+                return;
+            }
+
+            // Atualizar UI
+            document.getElementById('user-nickname').textContent = userProfile.nickname;
+            document.getElementById('welcome-name').textContent = userProfile.nickname;
+            document.getElementById('stat-pontos').textContent = userProfile.pontuacao_total || 0;
+
+            // Carregar dados
+            await Promise.all([
+                loadTemporadas(),
+                loadCertificados(),
+                loadEstatisticas()
+            ]);
+        }
+
+        async function loadTemporadas() {
+            const container = document.getElementById('temporadas-container');
+
+            const { data: temporadas, error } = await supabase
+                .from('temporadas')
+                .select('*')
+                .in('status', ['ativa', 'encerrada'])
+                .order('ordem', { ascending: true });
+
+            if (error || !temporadas?.length) {
+                container.innerHTML = `
+                    <div class="glass-panel rounded-2xl p-8 text-center col-span-full">
+                        <span class="material-symbols-outlined text-4xl text-slate-600 mb-3">podcasts</span>
+                        <p class="text-slate-400 text-sm">Nenhuma temporada disponível ainda</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Buscar progresso do usuário
+            const { data: progresso } = await supabase
+                .from('progresso_usuario')
+                .select('episodio_id, completado')
+                .eq('usuario_id', userProfile.id);
+
+            const progressoSet = new Set(progresso?.filter(p => p.completado).map(p => p.episodio_id) || []);
+
+            container.innerHTML = '';
+
+            for (const temp of temporadas) {
+                // Contar episódios da temporada
+                const { data: episodios } = await supabase
+                    .from('episodios')
+                    .select('id')
+                    .eq('temporada_id', temp.id)
+                    .eq('status', 'publicado');
+
+                const totalEpisodios = episodios?.length || 0;
+                const completados = episodios?.filter(ep => progressoSet.has(ep.id)).length || 0;
+                const progPct = totalEpisodios > 0 ? Math.round((completados / totalEpisodios) * 100) : 0;
+
+                const card = document.createElement('div');
+                card.className = 'glass-panel rounded-2xl overflow-hidden group hover:border-aec-pink/30 transition-all cursor-pointer';
+                card.onclick = () => window.location.href = `player.html?temporada=${temp.id}`;
+
+                card.innerHTML = `
+                    <div class="relative h-40 overflow-hidden">
+                        <img src="${temp.imagem_capa || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1000&auto=format&fit=crop'}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
+                        <div class="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur rounded-full text-xs font-medium ${temp.status === 'ativa' ? 'text-green-400' : 'text-slate-400'}">
+                            ${temp.status === 'ativa' ? '🟢 Ativa' : '📁 Encerrada'}
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-lg mb-1 group-hover:text-aec-pink transition-colors">${temp.titulo}</h3>
+                        <p class="text-slate-400 text-sm mb-4 line-clamp-2">${temp.descricao || 'Sem descrição'}</p>
+                        <div class="flex items-center justify-between text-xs mb-2">
+                            <span class="text-slate-500">${completados}/${totalEpisodios} episódios</span>
+                            <span class="text-aec-pink font-medium">${progPct}%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5">
+                            <div class="bg-aec-pink h-full rounded-full transition-all" style="width: ${progPct}%"></div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            }
+        }
+
+        async function loadCertificados() {
+            const container = document.getElementById('certificados-container');
+
+            const { data: certificados, error } = await supabase
+                .from('certificados')
+                .select('*, temporadas(titulo)')
+                .eq('usuario_id', userProfile.id)
+                .order('created_at', { ascending: false });
+
+            document.getElementById('stat-certificados').textContent = certificados?.length || 0;
+
+            if (error || !certificados?.length) {
+                return;
+            }
+
+            container.innerHTML = '';
+
+            for (const cert of certificados) {
+                const card = document.createElement('div');
+                card.className = 'glass-panel rounded-2xl p-6 border border-green-500/20 hover:border-green-500/40 transition-all';
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 bg-green-500/20 rounded-xl flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-green-400 text-3xl">workspace_premium</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-white mb-1 truncate">${cert.temporadas?.titulo || 'Certificado'}</h3>
+                            <p class="text-sm text-slate-400 mb-2">Nota: <span class="text-green-400 font-medium">${cert.nota}</span></p>
+                            <p class="text-xs text-slate-500 font-mono mb-3">${cert.codigo_validacao}</p>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-500">${formatDate(cert.created_at)}</span>
+                                ${cert.pdf_url ? `
+                                    <a href="${cert.pdf_url}" target="_blank" class="text-xs text-aec-pink hover:underline flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">download</span> PDF
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            }
+        }
+
+        async function loadEstatisticas() {
+            // Contar episódios completos
+            const { data: progresso } = await supabase
+                .from('progresso_usuario')
+                .select('id')
+                .eq('usuario_id', userProfile.id)
+                .eq('completado', true);
+
+            document.getElementById('stat-episodios').textContent = progresso?.length || 0;
+
+            // Buscar posição no ranking
+            const { data: rankings } = await supabase
+                .from('usuarios')
+                .select('id, pontuacao_total')
+                .eq('status', 'aprovado')
+                .gt('pontuacao_total', 0)
+                .order('pontuacao_total', { ascending: false });
+
+            if (rankings) {
+                const pos = rankings.findIndex(u => u.id === userProfile.id) + 1;
+                document.getElementById('stat-ranking').textContent = pos > 0 ? `#${pos}` : '-';
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

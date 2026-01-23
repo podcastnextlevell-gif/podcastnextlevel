@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Recuperar Senha | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white min-h-screen font-sans flex items-center justify-center p-4">
+
+    <!-- Background -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-blue-900/10"></div>
+    </div>
+
+    <!-- Card -->
+    <div class="relative z-10 w-full max-w-md">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <a href="index.html"
+                class="inline-flex items-center gap-2 text-2xl font-bold hover:opacity-80 transition-opacity">
+                <span class="material-symbols-outlined text-aec-pink text-3xl">podcasts</span>
+                <span>Next <span class="gradient-text">Level</span></span>
+            </a>
+        </div>
+
+        <!-- Card -->
+        <div class="glass-panel rounded-3xl p-8 shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-3xl text-blue-400">lock_reset</span>
+                </div>
+                <h1 class="text-2xl font-bold mb-2">Recuperar Senha</h1>
+                <p class="text-slate-400 text-sm">Digite seu email para receber um link de recuperação</p>
+            </div>
+
+            <!-- Messages -->
+            <div id="error-message"
+                class="hidden bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">error</span>
+                <span id="error-text"></span>
+            </div>
+
+            <div id="success-message"
+                class="hidden bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">check_circle</span>
+                <span id="success-text"></span>
+            </div>
+
+            <!-- Form -->
+            <form id="recover-form" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                    <div class="relative">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">email</span>
+                        <input type="email" id="email" required
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-500 transition-all"
+                            placeholder="seu@email.com">
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg">
+                    <span>Enviar Link de Recuperação</span>
+                    <span class="material-symbols-outlined">send</span>
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-slate-800 text-center">
+                <a href="login.html"
+                    class="text-slate-400 hover:text-white text-sm inline-flex items-center gap-1 transition-colors">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    Voltar para o login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('recover-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const successDiv = document.getElementById('success-message');
+            const successText = document.getElementById('success-text');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Hide messages
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            // Disable button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="animate-spin material-symbols-outlined">progress_activity</span> Enviando...';
+
+            const result = await recuperarSenha(email);
+
+            if (!result.success) {
+                errorText.textContent = result.error;
+                errorDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Enviar Link de Recuperação</span><span class="material-symbols-outlined">send</span>';
+            } else {
+                successText.textContent = result.message;
+                successDiv.classList.remove('hidden');
+                submitBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Email enviado!';
+            }
+        });
+    </script>
+</body>
+
+</html>

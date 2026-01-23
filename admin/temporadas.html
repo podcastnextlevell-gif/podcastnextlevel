@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Gestão de Temporadas | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-link {
+            @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all;
+        }
+
+        .sidebar-link.active {
+            @apply text-white bg-aec-pink/20 border border-aec-pink/30;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #ec4899;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen font-sans">
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50">
+            <div class="p-6 border-b border-slate-800">
+                <a href="../index.html" class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-aec-pink text-2xl">podcasts</span>
+                    <span class="font-bold">Next <span class="gradient-text">Level</span></span>
+                </a>
+                <p class="text-xs text-slate-500 mt-1">Painel Administrativo</p>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="index.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span>
+                    Dashboard</a>
+                <a href="usuarios.html" class="sidebar-link"><span class="material-symbols-outlined">group</span>
+                    Usuários</a>
+                <a href="temporadas.html" class="sidebar-link active"><span
+                        class="material-symbols-outlined">subscriptions</span> Temporadas</a>
+                <a href="episodios.html" class="sidebar-link"><span class="material-symbols-outlined">headphones</span>
+                    Episódios</a>
+                <a href="provas.html" class="sidebar-link"><span class="material-symbols-outlined">quiz</span>
+                    Provas</a>
+                <a href="certificados.html" class="sidebar-link"><span
+                        class="material-symbols-outlined">workspace_premium</span> Certificados</a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-aec-pink/20 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-aec-pink">admin_panel_settings</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="admin-name" class="text-sm font-medium truncate">Admin</p>
+                        <p class="text-xs text-slate-500">Administrador</p>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-red-400"><span
+                            class="material-symbols-outlined">logout</span></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="ml-64 flex-1 p-8 min-h-screen">
+            <header class="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold">Gestão de Temporadas</h1>
+                    <p class="text-slate-400">Gerencie as temporadas do podcast</p>
+                </div>
+                <button onclick="openModal()"
+                    class="bg-aec-pink hover:bg-aec-pinkDark px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-all">
+                    <span class="material-symbols-outlined">add</span>
+                    Nova Temporada
+                </button>
+            </header>
+
+            <!-- Temporadas Grid -->
+            <section id="temporadas-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-panel rounded-2xl p-8 text-center">
+                    <span
+                        class="material-symbols-outlined text-4xl text-slate-600 mb-3 animate-spin">progress_activity</span>
+                    <p class="text-slate-400">Carregando...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80" onclick="closeModal()"></div>
+        <div class="relative glass-panel rounded-3xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+
+            <h2 id="modal-title" class="text-xl font-bold mb-6">Nova Temporada</h2>
+
+            <form id="temporada-form" class="space-y-4">
+                <input type="hidden" id="temporada-id">
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Título *</label>
+                    <input type="text" id="titulo" required
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
+                        placeholder="Ex: Temporada 1 - Fundamentos">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Descrição</label>
+                    <textarea id="descricao" rows="3"
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white resize-none"
+                        placeholder="Descrição da temporada..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">URL da Imagem de Capa</label>
+                    <input type="url" id="imagem_capa"
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
+                        placeholder="https://...">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Data Início</label>
+                        <input type="date" id="data_inicio"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Data Fim</label>
+                        <input type="date" id="data_fim"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                        <select id="status"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
+                            <option value="planejamento">Em Planejamento</option>
+                            <option value="lancamento">Em Lançamento</option>
+                            <option value="ativa">Ativa</option>
+                            <option value="encerrada">Encerrada</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Ordem</label>
+                        <input type="number" id="ordem" value="0" min="0"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-medium transition-all">Cancelar</button>
+                    <button type="submit"
+                        class="flex-1 bg-aec-pink hover:bg-aec-pinkDark py-3 rounded-xl font-medium transition-all">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        let temporadas = [];
+
+        async function init() {
+            const canAccess = await protectAdminPage();
+            if (!canAccess) return;
+
+            const profile = await getUserProfile();
+            if (profile) document.getElementById('admin-name').textContent = profile.nickname;
+
+            await loadTemporadas();
+        }
+
+        async function loadTemporadas() {
+            const container = document.getElementById('temporadas-container');
+
+            const { data, error } = await supabase
+                .from('temporadas')
+                .select('*')
+                .order('ordem', { ascending: true });
+
+            if (error) {
+                container.innerHTML = '<p class="text-red-400">Erro ao carregar temporadas</p>';
+                return;
+            }
+
+            temporadas = data || [];
+
+            if (!temporadas.length) {
+                container.innerHTML = `
+                    <div class="glass-panel rounded-2xl p-8 text-center col-span-full">
+                        <span class="material-symbols-outlined text-4xl text-slate-600 mb-3">subscriptions</span>
+                        <p class="text-slate-400">Nenhuma temporada criada</p>
+                        <button onclick="openModal()" class="mt-4 text-aec-pink hover:underline">Criar primeira temporada</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Buscar contagem de episódios
+            const { data: episodios } = await supabase.from('episodios').select('temporada_id');
+            const epCount = {};
+            episodios?.forEach(ep => {
+                epCount[ep.temporada_id] = (epCount[ep.temporada_id] || 0) + 1;
+            });
+
+            container.innerHTML = temporadas.map(temp => {
+                const statusColors = {
+                    planejamento: 'bg-slate-500/20 text-slate-400',
+                    lancamento: 'bg-blue-500/20 text-blue-400',
+                    ativa: 'bg-green-500/20 text-green-400',
+                    encerrada: 'bg-purple-500/20 text-purple-400'
+                };
+
+                const statusLabels = {
+                    planejamento: '📝 Planejamento',
+                    lancamento: '🚀 Lançamento',
+                    ativa: '🟢 Ativa',
+                    encerrada: '📁 Encerrada'
+                };
+
+                return `
+                    <div class="glass-panel rounded-2xl overflow-hidden group hover:border-aec-pink/30 transition-all">
+                        <div class="relative h-40 overflow-hidden">
+                            <img src="${temp.imagem_capa || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1000&auto=format&fit=crop'}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
+                            <div class="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${statusColors[temp.status]}">
+                                ${statusLabels[temp.status]}
+                            </div>
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <p class="text-xs text-slate-400">Ordem: ${temp.ordem}</p>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-lg mb-1">${temp.titulo}</h3>
+                            <p class="text-slate-400 text-sm mb-4 line-clamp-2">${temp.descricao || 'Sem descrição'}</p>
+                            
+                            <div class="flex items-center justify-between text-xs text-slate-500 mb-4">
+                                <span>${epCount[temp.id] || 0} episódios</span>
+                                <span>${temp.data_inicio ? formatDate(temp.data_inicio) : '-'}</span>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="editTemporada('${temp.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">edit</span> Editar
+                                </button>
+                                <button onclick="deleteTemporada('${temp.id}')" class="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all">
+                                    <span class="material-symbols-outlined text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openModal(temporada = null) {
+            document.getElementById('modal-title').textContent = temporada ? 'Editar Temporada' : 'Nova Temporada';
+            document.getElementById('temporada-id').value = temporada?.id || '';
+            document.getElementById('titulo').value = temporada?.titulo || '';
+            document.getElementById('descricao').value = temporada?.descricao || '';
+            document.getElementById('imagem_capa').value = temporada?.imagem_capa || '';
+            document.getElementById('data_inicio').value = temporada?.data_inicio || '';
+            document.getElementById('data_fim').value = temporada?.data_fim || '';
+            document.getElementById('status').value = temporada?.status || 'planejamento';
+            document.getElementById('ordem').value = temporada?.ordem || 0;
+
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function editTemporada(id) {
+            const temp = temporadas.find(t => t.id === id);
+            if (temp) openModal(temp);
+        }
+
+        async function deleteTemporada(id) {
+            if (!confirm('Excluir esta temporada? Os episódios vinculados também serão excluídos.')) return;
+
+            const { error } = await supabase.from('temporadas').delete().eq('id', id);
+            if (error) { alert('Erro ao excluir'); return; }
+
+            showToast('Temporada excluída', 'success');
+            await loadTemporadas();
+        }
+
+        document.getElementById('temporada-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('temporada-id').value;
+            const dados = {
+                titulo: document.getElementById('titulo').value,
+                descricao: document.getElementById('descricao').value,
+                imagem_capa: document.getElementById('imagem_capa').value || null,
+                data_inicio: document.getElementById('data_inicio').value || null,
+                data_fim: document.getElementById('data_fim').value || null,
+                status: document.getElementById('status').value,
+                ordem: parseInt(document.getElementById('ordem').value) || 0
+            };
+
+            let error;
+            if (id) {
+                ({ error } = await supabase.from('temporadas').update(dados).eq('id', id));
+            } else {
+                ({ error } = await supabase.from('temporadas').insert(dados));
+            }
+
+            if (error) { alert('Erro ao salvar: ' + error.message); return; }
+
+            showToast(id ? 'Temporada atualizada!' : 'Temporada criada!', 'success');
+            closeModal();
+            await loadTemporadas();
+        });
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = '../index.html';
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

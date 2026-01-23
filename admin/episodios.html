@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Gestão de Episódios | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-link {
+            @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all;
+        }
+
+        .sidebar-link.active {
+            @apply text-white bg-aec-pink/20 border border-aec-pink/30;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #ec4899;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen font-sans">
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50">
+            <div class="p-6 border-b border-slate-800">
+                <a href="../index.html" class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-aec-pink text-2xl">podcasts</span>
+                    <span class="font-bold">Next <span class="gradient-text">Level</span></span>
+                </a>
+                <p class="text-xs text-slate-500 mt-1">Painel Administrativo</p>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="index.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span>
+                    Dashboard</a>
+                <a href="usuarios.html" class="sidebar-link"><span class="material-symbols-outlined">group</span>
+                    Usuários</a>
+                <a href="temporadas.html" class="sidebar-link"><span
+                        class="material-symbols-outlined">subscriptions</span> Temporadas</a>
+                <a href="episodios.html" class="sidebar-link active"><span
+                        class="material-symbols-outlined">headphones</span> Episódios</a>
+                <a href="provas.html" class="sidebar-link"><span class="material-symbols-outlined">quiz</span>
+                    Provas</a>
+                <a href="certificados.html" class="sidebar-link"><span
+                        class="material-symbols-outlined">workspace_premium</span> Certificados</a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-aec-pink/20 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-aec-pink">admin_panel_settings</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="admin-name" class="text-sm font-medium truncate">Admin</p>
+                        <p class="text-xs text-slate-500">Administrador</p>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-red-400"><span
+                            class="material-symbols-outlined">logout</span></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="ml-64 flex-1 p-8 min-h-screen">
+            <header class="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold">Gestão de Episódios</h1>
+                    <p class="text-slate-400">Gerencie os episódios de cada temporada</p>
+                </div>
+                <button onclick="openModal()"
+                    class="bg-aec-pink hover:bg-aec-pinkDark px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-all">
+                    <span class="material-symbols-outlined">add</span>
+                    Novo Episódio
+                </button>
+            </header>
+
+            <!-- Filtro por Temporada -->
+            <section class="glass-panel rounded-2xl p-4 mb-6">
+                <div class="flex items-center gap-4">
+                    <span class="text-slate-400 text-sm">Temporada:</span>
+                    <select id="filter-temporada" onchange="filterByTemporada()"
+                        class="bg-slate-800 border border-slate-700 rounded-lg py-2 px-4 text-sm">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Episódios List -->
+            <section id="episodios-container" class="space-y-4">
+                <div class="glass-panel rounded-2xl p-8 text-center">
+                    <span
+                        class="material-symbols-outlined text-4xl text-slate-600 mb-3 animate-spin">progress_activity</span>
+                    <p class="text-slate-400">Carregando...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80" onclick="closeModal()"></div>
+        <div class="relative glass-panel rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+
+            <h2 id="modal-title" class="text-xl font-bold mb-6">Novo Episódio</h2>
+
+            <form id="episodio-form" class="space-y-4">
+                <input type="hidden" id="episodio-id">
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Temporada *</label>
+                    <select id="temporada_id" required
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Título *</label>
+                    <input type="text" id="titulo" required
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
+                        placeholder="Ex: 01. Introdução ao SQL">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Descrição / Transcrição</label>
+                    <textarea id="descricao" rows="4"
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white resize-none"
+                        placeholder="Conteúdo do episódio..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">URL do Áudio</label>
+                        <input type="url" id="audio_url"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
+                            placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">URL da Imagem</label>
+                        <input type="url" id="imagem_url"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
+                            placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Duração (segundos)</label>
+                        <input type="number" id="duracao_segundos" min="0"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
+                            placeholder="300">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                        <select id="status"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
+                            <option value="rascunho">Rascunho</option>
+                            <option value="previa">Prévia</option>
+                            <option value="publicado">Publicado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Ordem</label>
+                        <input type="number" id="ordem" value="0" min="0"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-medium transition-all">Cancelar</button>
+                    <button type="submit"
+                        class="flex-1 bg-aec-pink hover:bg-aec-pinkDark py-3 rounded-xl font-medium transition-all">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        let episodios = [];
+        let temporadas = [];
+
+        async function init() {
+            const canAccess = await protectAdminPage();
+            if (!canAccess) return;
+
+            const profile = await getUserProfile();
+            if (profile) document.getElementById('admin-name').textContent = profile.nickname;
+
+            await loadTemporadas();
+            await loadEpisodios();
+        }
+
+        async function loadTemporadas() {
+            const { data } = await supabase.from('temporadas').select('*').order('ordem');
+            temporadas = data || [];
+
+            const filterSelect = document.getElementById('filter-temporada');
+            const formSelect = document.getElementById('temporada_id');
+
+            temporadas.forEach(t => {
+                filterSelect.innerHTML += `<option value="${t.id}">${t.titulo}</option>`;
+                formSelect.innerHTML += `<option value="${t.id}">${t.titulo}</option>`;
+            });
+        }
+
+        async function loadEpisodios() {
+            const container = document.getElementById('episodios-container');
+
+            const { data, error } = await supabase
+                .from('episodios')
+                .select('*, temporadas(titulo)')
+                .order('temporada_id')
+                .order('ordem', { ascending: true });
+
+            if (error) {
+                container.innerHTML = '<p class="text-red-400">Erro ao carregar</p>';
+                return;
+            }
+
+            episodios = data || [];
+            renderEpisodios(episodios);
+        }
+
+        function filterByTemporada() {
+            const tempId = document.getElementById('filter-temporada').value;
+            if (tempId) {
+                renderEpisodios(episodios.filter(e => e.temporada_id === tempId));
+            } else {
+                renderEpisodios(episodios);
+            }
+        }
+
+        function renderEpisodios(list) {
+            const container = document.getElementById('episodios-container');
+
+            if (!list.length) {
+                container.innerHTML = `
+                    <div class="glass-panel rounded-2xl p-8 text-center">
+                        <span class="material-symbols-outlined text-4xl text-slate-600 mb-3">headphones</span>
+                        <p class="text-slate-400">Nenhum episódio encontrado</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const statusColors = {
+                rascunho: 'bg-slate-500/20 text-slate-400',
+                previa: 'bg-yellow-500/20 text-yellow-400',
+                publicado: 'bg-green-500/20 text-green-400'
+            };
+
+            const statusLabels = {
+                rascunho: '📝 Rascunho',
+                previa: '👁️ Prévia',
+                publicado: '✅ Publicado'
+            };
+
+            container.innerHTML = list.map(ep => `
+                <div class="glass-panel rounded-2xl p-5 flex items-center gap-4 hover:border-aec-pink/30 transition-all">
+                    <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-800 shrink-0">
+                        <img src="${ep.imagem_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=200&auto=format&fit=crop'}" class="w-full h-full object-cover">
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 rounded text-xs ${statusColors[ep.status]}">${statusLabels[ep.status]}</span>
+                            <span class="text-xs text-slate-500">${ep.temporadas?.titulo || '-'}</span>
+                        </div>
+                        <h3 class="font-bold text-white truncate">${ep.titulo}</h3>
+                        <p class="text-sm text-slate-400 line-clamp-1">${ep.descricao || 'Sem descrição'}</p>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Ordem: ${ep.ordem} 
+                            ${ep.duracao_segundos ? `• ${Math.floor(ep.duracao_segundos / 60)}:${String(ep.duracao_segundos % 60).padStart(2, '0')}` : ''}
+                        </p>
+                    </div>
+                    
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="editEpisodio('${ep.id}')" class="p-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-white">
+                            <span class="material-symbols-outlined text-sm">edit</span>
+                        </button>
+                        <button onclick="deleteEpisodio('${ep.id}')" class="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal(episodio = null) {
+            document.getElementById('modal-title').textContent = episodio ? 'Editar Episódio' : 'Novo Episódio';
+            document.getElementById('episodio-id').value = episodio?.id || '';
+            document.getElementById('temporada_id').value = episodio?.temporada_id || '';
+            document.getElementById('titulo').value = episodio?.titulo || '';
+            document.getElementById('descricao').value = episodio?.descricao || '';
+            document.getElementById('audio_url').value = episodio?.audio_url || '';
+            document.getElementById('imagem_url').value = episodio?.imagem_url || '';
+            document.getElementById('duracao_segundos').value = episodio?.duracao_segundos || '';
+            document.getElementById('status').value = episodio?.status || 'rascunho';
+            document.getElementById('ordem').value = episodio?.ordem || 0;
+
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function editEpisodio(id) {
+            const ep = episodios.find(e => e.id === id);
+            if (ep) openModal(ep);
+        }
+
+        async function deleteEpisodio(id) {
+            if (!confirm('Excluir este episódio?')) return;
+            const { error } = await supabase.from('episodios').delete().eq('id', id);
+            if (error) { alert('Erro'); return; }
+            showToast('Episódio excluído', 'success');
+            await loadEpisodios();
+        }
+
+        document.getElementById('episodio-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('episodio-id').value;
+            const dados = {
+                temporada_id: document.getElementById('temporada_id').value,
+                titulo: document.getElementById('titulo').value,
+                descricao: document.getElementById('descricao').value,
+                audio_url: document.getElementById('audio_url').value || null,
+                imagem_url: document.getElementById('imagem_url').value || null,
+                duracao_segundos: parseInt(document.getElementById('duracao_segundos').value) || 0,
+                status: document.getElementById('status').value,
+                ordem: parseInt(document.getElementById('ordem').value) || 0
+            };
+
+            let error;
+            if (id) {
+                ({ error } = await supabase.from('episodios').update(dados).eq('id', id));
+            } else {
+                ({ error } = await supabase.from('episodios').insert(dados));
+            }
+
+            if (error) { alert('Erro: ' + error.message); return; }
+
+            showToast(id ? 'Episódio atualizado!' : 'Episódio criado!', 'success');
+            closeModal();
+            await loadEpisodios();
+        });
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = '../index.html';
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

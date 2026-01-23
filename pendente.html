@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Aguardando Aprovação | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white min-h-screen font-sans flex items-center justify-center p-4">
+
+    <!-- Background -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-black to-yellow-900/10"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="relative z-10 text-center max-w-md">
+        <!-- Icon -->
+        <div class="mb-8 float-animation">
+            <div
+                class="w-32 h-32 mx-auto bg-yellow-500/20 rounded-full flex items-center justify-center border-2 border-yellow-500/30">
+                <span class="material-symbols-outlined text-6xl text-yellow-400">hourglass_top</span>
+            </div>
+        </div>
+
+        <!-- Text -->
+        <h1 class="text-3xl font-bold mb-4">Aguardando Aprovação</h1>
+        <p class="text-slate-400 mb-8 leading-relaxed">
+            Seu cadastro foi recebido com sucesso! <br>
+            Um administrador irá analisar sua solicitação em breve.
+        </p>
+
+        <!-- Info Card -->
+        <div class="glass-panel rounded-2xl p-6 mb-8 text-left">
+            <h3 class="font-semibold text-yellow-400 flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined">info</span>
+                O que acontece agora?
+            </h3>
+            <ul class="text-sm text-slate-400 space-y-2">
+                <li class="flex items-start gap-2">
+                    <span class="material-symbols-outlined text-sm text-slate-600 mt-0.5">check</span>
+                    Seu cadastro está na fila de análise
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="material-symbols-outlined text-sm text-slate-600 mt-0.5">check</span>
+                    Você receberá um email quando for aprovado
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="material-symbols-outlined text-sm text-slate-600 mt-0.5">check</span>
+                    Após aprovação, faça login normalmente
+                </li>
+            </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col gap-4">
+            <button onclick="checkStatus()"
+                class="bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">refresh</span>
+                Verificar Status
+            </button>
+
+            <button onclick="logout()"
+                class="text-slate-500 hover:text-white text-sm transition-colors flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                Sair e voltar depois
+            </button>
+        </div>
+
+        <!-- Status Message -->
+        <div id="status-message" class="hidden mt-6 p-4 rounded-xl text-sm"></div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        async function checkStatus() {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'mt-6 p-4 rounded-xl text-sm bg-slate-800 text-slate-300';
+            statusDiv.classList.remove('hidden');
+            statusDiv.innerHTML = '<span class="animate-pulse">Verificando...</span>';
+
+            const profile = await getUserProfile();
+
+            if (!profile) {
+                statusDiv.className = 'mt-6 p-4 rounded-xl text-sm bg-red-500/20 text-red-400 border border-red-500/30';
+                statusDiv.textContent = 'Não foi possível verificar o status.';
+                return;
+            }
+
+            if (profile.status === 'aprovado') {
+                statusDiv.className = 'mt-6 p-4 rounded-xl text-sm bg-green-500/20 text-green-400 border border-green-500/30';
+                statusDiv.innerHTML = '🎉 Sua conta foi aprovada! Redirecionando...';
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+            } else if (profile.status === 'reprovado') {
+                statusDiv.className = 'mt-6 p-4 rounded-xl text-sm bg-red-500/20 text-red-400 border border-red-500/30';
+                statusDiv.textContent = 'Infelizmente seu cadastro foi reprovado. Entre em contato com o suporte.';
+            } else {
+                statusDiv.className = 'mt-6 p-4 rounded-xl text-sm bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+                statusDiv.textContent = 'Seu cadastro ainda está em análise. Tente novamente mais tarde.';
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Check if user should be here
+        (async () => {
+            const profile = await getUserProfile();
+            if (profile && profile.status === 'aprovado') {
+                window.location.href = profile.is_admin ? 'admin/index.html' : 'dashboard.html';
+            }
+        })();
+    </script>
+</body>
+
+</html>

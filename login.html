@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Login | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ec4899;
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white min-h-screen font-sans flex items-center justify-center p-4">
+
+    <!-- Background -->
+    <div class="fixed inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1478737270239-2f02b77ac6d5?q=80&w=2694&auto=format&fit=crop"
+            class="w-full h-full object-cover opacity-20 blur-md">
+        <div class="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-aec-pink/10"></div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="relative z-10 w-full max-w-md">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <a href="index.html"
+                class="inline-flex items-center gap-2 text-2xl font-bold hover:opacity-80 transition-opacity">
+                <span class="material-symbols-outlined text-aec-pink text-3xl">podcasts</span>
+                <span>Next <span class="gradient-text">Level</span></span>
+            </a>
+        </div>
+
+        <!-- Card -->
+        <div class="glass-panel rounded-3xl p-8 shadow-2xl">
+            <h1 class="text-2xl font-bold text-center mb-2">Bem-vindo de volta!</h1>
+            <p class="text-slate-400 text-center text-sm mb-8">Entre para continuar sua jornada</p>
+
+            <!-- Error Message -->
+            <div id="error-message"
+                class="hidden bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">error</span>
+                <span id="error-text"></span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                    <div class="relative">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">email</span>
+                        <input type="email" id="email" required
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-500 transition-all"
+                            placeholder="seu@email.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Senha</label>
+                    <div class="relative">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">lock</span>
+                        <input type="password" id="password" required
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-12 text-white placeholder-slate-500 transition-all"
+                            placeholder="••••••••">
+                        <button type="button" onclick="togglePassword()"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
+                            <span id="password-toggle-icon" class="material-symbols-outlined">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 accent-aec-pink rounded">
+                        <span class="text-slate-400">Lembrar de mim</span>
+                    </label>
+                    <a href="recuperar-senha.html" class="text-aec-pink hover:underline">Esqueci a senha</a>
+                </div>
+
+                <button type="submit" id="submit-btn"
+                    class="w-full bg-aec-pink hover:bg-aec-pinkDark text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-pink-900/30">
+                    <span>Entrar</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-slate-800 text-center">
+                <p class="text-slate-400 text-sm">
+                    Não tem uma conta?
+                    <a href="cadastro.html" class="text-aec-pink hover:underline font-medium">Criar conta</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="text-center mt-6">
+            <a href="index.html"
+                class="text-slate-500 hover:text-white text-sm inline-flex items-center gap-1 transition-colors">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Voltar para a página inicial
+            </a>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('password-toggle-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+
+        // Handle form submit
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Disable button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="animate-spin material-symbols-outlined">progress_activity</span> Entrando...';
+
+            const result = await login(email, password);
+
+            if (!result.success) {
+                errorText.textContent = result.error;
+                errorDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Entrar</span><span class="material-symbols-outlined">arrow_forward</span>';
+            }
+        });
+
+        // Check if already logged in
+        (async () => {
+            const user = await getUser();
+            if (user) {
+                await redirectByRole();
+            }
+        })();
+    </script>
+</body>
+
+</html>

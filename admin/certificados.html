@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Certificados | Next Level Podcast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-link {
+            @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all;
+        }
+
+        .sidebar-link.active {
+            @apply text-white bg-aec-pink/20 border border-aec-pink/30;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen font-sans">
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50">
+            <div class="p-6 border-b border-slate-800">
+                <a href="../index.html" class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-aec-pink text-2xl">podcasts</span>
+                    <span class="font-bold">Next <span class="gradient-text">Level</span></span>
+                </a>
+                <p class="text-xs text-slate-500 mt-1">Painel Administrativo</p>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="index.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span>
+                    Dashboard</a>
+                <a href="usuarios.html" class="sidebar-link"><span class="material-symbols-outlined">group</span>
+                    Usuários</a>
+                <a href="temporadas.html" class="sidebar-link"><span
+                        class="material-symbols-outlined">subscriptions</span> Temporadas</a>
+                <a href="episodios.html" class="sidebar-link"><span class="material-symbols-outlined">headphones</span>
+                    Episódios</a>
+                <a href="provas.html" class="sidebar-link"><span class="material-symbols-outlined">quiz</span>
+                    Provas</a>
+                <a href="certificados.html" class="sidebar-link active"><span
+                        class="material-symbols-outlined">workspace_premium</span> Certificados</a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-aec-pink/20 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-aec-pink">admin_panel_settings</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="admin-name" class="text-sm font-medium truncate">Admin</p>
+                        <p class="text-xs text-slate-500">Administrador</p>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-red-400"><span
+                            class="material-symbols-outlined">logout</span></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="ml-64 flex-1 p-8 min-h-screen">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold">Certificados Emitidos</h1>
+                <p class="text-slate-400">Visualize todos os certificados gerados na plataforma</p>
+            </header>
+
+            <!-- Stats -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-sm">Total Emitidos</span>
+                        <span class="material-symbols-outlined text-green-400">workspace_premium</span>
+                    </div>
+                    <p id="stat-total" class="text-3xl font-bold mt-2">0</p>
+                </div>
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-sm">Média das Notas</span>
+                        <span class="material-symbols-outlined text-aec-pink">analytics</span>
+                    </div>
+                    <p id="stat-media" class="text-3xl font-bold mt-2">-</p>
+                </div>
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-sm">Este Mês</span>
+                        <span class="material-symbols-outlined text-blue-400">calendar_month</span>
+                    </div>
+                    <p id="stat-mes" class="text-3xl font-bold mt-2">0</p>
+                </div>
+            </section>
+
+            <!-- Certificates Table -->
+            <section class="glass-panel rounded-2xl overflow-hidden">
+                <div class="p-4 bg-slate-900/50 border-b border-slate-800 flex justify-between items-center">
+                    <h2 class="font-bold">Lista de Certificados</h2>
+                    <input type="text" id="search" placeholder="Buscar por nome ou código..."
+                        class="bg-slate-800 border border-slate-700 rounded-lg py-2 px-4 text-sm w-64"
+                        oninput="filterCertificados()">
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-900/30 border-b border-slate-800">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Usuário</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Temporada
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Nota</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Código</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="certificados-table" class="divide-y divide-slate-800">
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                                    <span
+                                        class="material-symbols-outlined text-3xl mb-2 animate-spin">progress_activity</span>
+                                    <p>Carregando...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        let certificados = [];
+
+        async function init() {
+            const canAccess = await protectAdminPage();
+            if (!canAccess) return;
+
+            const profile = await getUserProfile();
+            if (profile) document.getElementById('admin-name').textContent = profile.nickname;
+
+            await loadCertificados();
+        }
+
+        async function loadCertificados() {
+            const { data, error } = await supabase
+                .from('certificados')
+                .select('*, usuarios(nome_completo, nickname), temporadas(titulo)')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                document.getElementById('certificados-table').innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-red-400">Erro ao carregar</td></tr>';
+                return;
+            }
+
+            certificados = data || [];
+
+            // Stats
+            document.getElementById('stat-total').textContent = certificados.length;
+
+            if (certificados.length > 0) {
+                const media = (certificados.reduce((sum, c) => sum + parseFloat(c.nota), 0) / certificados.length).toFixed(1);
+                document.getElementById('stat-media').textContent = media;
+
+                const mesAtual = new Date().getMonth();
+                const esteMes = certificados.filter(c => new Date(c.created_at).getMonth() === mesAtual).length;
+                document.getElementById('stat-mes').textContent = esteMes;
+            }
+
+            renderCertificados(certificados);
+        }
+
+        function filterCertificados() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const filtered = certificados.filter(c =>
+                c.usuarios?.nome_completo?.toLowerCase().includes(query) ||
+                c.usuarios?.nickname?.toLowerCase().includes(query) ||
+                c.codigo_validacao?.toLowerCase().includes(query)
+            );
+            renderCertificados(filtered);
+        }
+
+        function renderCertificados(list) {
+            const tbody = document.getElementById('certificados-table');
+
+            if (!list.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                            <span class="material-symbols-outlined text-3xl mb-2">workspace_premium</span>
+                            <p>Nenhum certificado encontrado</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = list.map(c => `
+                <tr class="hover:bg-slate-800/50 transition-colors">
+                    <td class="px-6 py-4">
+                        <p class="font-medium text-sm">${c.usuarios?.nome_completo || '-'}</p>
+                        <p class="text-xs text-aec-pink">${c.usuarios?.nickname || '-'}</p>
+                    </td>
+                    <td class="px-6 py-4 text-sm">${c.temporadas?.titulo || '-'}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-lg text-sm font-bold">${c.nota}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <code class="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded">${c.codigo_validacao}</code>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-400">${formatDate(c.created_at)}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = '../index.html';
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
