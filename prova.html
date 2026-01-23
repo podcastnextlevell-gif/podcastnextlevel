@@ -255,8 +255,29 @@
             // Check if already approved or max attempts reached
             const aprovadoTentativa = tentativas?.find(t => t.aprovado);
             if (aprovadoTentativa) {
-                alert('Você já foi aprovado nesta prova!');
-                window.location.href = 'dashboard.html';
+                // Find the certificate for this season and redirect
+                const { data: certificado } = await supabaseClient
+                    .from('certificados')
+                    .select('id')
+                    .eq('usuario_id', userProfile.id)
+                    .eq('temporada_id', prova.temporada_id)
+                    .single();
+
+                if (certificado) {
+                    window.location.href = `certificado.html?id=${certificado.id}`;
+                    return;
+                }
+                // If no certificate found, show completion message
+                document.getElementById('loading-state').innerHTML = `
+                    <div class="text-center py-12">
+                        <span class="material-symbols-outlined text-5xl text-green-400 mb-4">check_circle</span>
+                        <h2 class="text-2xl font-bold text-green-400 mb-2">Você já foi aprovado!</h2>
+                        <p class="text-slate-400 mb-6">Nota: ${aprovadoTentativa.nota}</p>
+                        <a href="dashboard.html" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded-xl font-medium transition-all">
+                            Voltar ao Dashboard
+                        </a>
+                    </div>
+                `;
                 return;
             }
 
