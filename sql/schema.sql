@@ -5,8 +5,32 @@
 -- URL: https://supabase.com/dashboard/project/dnmeeirmjljmvbwcsdpx/sql
 -- ============================================
 
+-- ============================================
+-- LIMPAR POLÍTICAS EXISTENTES (evitar conflitos)
+-- ============================================
+DROP POLICY IF EXISTS "Usuários veem próprio perfil" ON usuarios;
+DROP POLICY IF EXISTS "Admin vê todos usuários" ON usuarios;
+DROP POLICY IF EXISTS "Admin atualiza usuários" ON usuarios;
+DROP POLICY IF EXISTS "Usuário insere próprio perfil" ON usuarios;
+DROP POLICY IF EXISTS "Usuário atualiza próprio perfil" ON usuarios;
+DROP POLICY IF EXISTS "Todos veem temporadas ativas" ON temporadas;
+DROP POLICY IF EXISTS "Admin gerencia temporadas" ON temporadas;
+DROP POLICY IF EXISTS "Usuários veem episódios publicados" ON episodios;
+DROP POLICY IF EXISTS "Admin gerencia episódios" ON episodios;
+DROP POLICY IF EXISTS "Usuários veem provas ativas" ON provas;
+DROP POLICY IF EXISTS "Admin gerencia provas" ON provas;
+DROP POLICY IF EXISTS "Usuários veem questões" ON questoes;
+DROP POLICY IF EXISTS "Admin gerencia questões" ON questoes;
+DROP POLICY IF EXISTS "Usuário vê próprias tentativas" ON tentativas_prova;
+DROP POLICY IF EXISTS "Usuário cria tentativa" ON tentativas_prova;
+DROP POLICY IF EXISTS "Usuário vê próprios certificados" ON certificados;
+DROP POLICY IF EXISTS "Inserir certificado" ON certificados;
+DROP POLICY IF EXISTS "Usuário vê próprio progresso" ON progresso_usuario;
+DROP POLICY IF EXISTS "Usuário atualiza progresso" ON progresso_usuario;
+
+-- ============================================
 -- 1. TABELA: usuarios
--- Perfis dos usuários da plataforma
+-- ============================================
 CREATE TABLE IF NOT EXISTS usuarios (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     auth_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -23,8 +47,9 @@ CREATE TABLE IF NOT EXISTS usuarios (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================
 -- 2. TABELA: temporadas
--- Temporadas do podcast
+-- ============================================
 CREATE TABLE IF NOT EXISTS temporadas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     titulo TEXT NOT NULL,
@@ -38,8 +63,9 @@ CREATE TABLE IF NOT EXISTS temporadas (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================
 -- 3. TABELA: episodios
--- Episódios de cada temporada
+-- ============================================
 CREATE TABLE IF NOT EXISTS episodios (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     temporada_id UUID REFERENCES temporadas(id) ON DELETE CASCADE,
@@ -55,8 +81,9 @@ CREATE TABLE IF NOT EXISTS episodios (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================
 -- 4. TABELA: provas
--- Provas de cada temporada
+-- ============================================
 CREATE TABLE IF NOT EXISTS provas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     temporada_id UUID REFERENCES temporadas(id) ON DELETE CASCADE,
@@ -70,8 +97,9 @@ CREATE TABLE IF NOT EXISTS provas (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================
 -- 5. TABELA: questoes
--- Questões das provas
+-- ============================================
 CREATE TABLE IF NOT EXISTS questoes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     prova_id UUID REFERENCES provas(id) ON DELETE CASCADE,
@@ -82,8 +110,9 @@ CREATE TABLE IF NOT EXISTS questoes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================
 -- 6. TABELA: tentativas_prova
--- Histórico de tentativas de prova
+-- ============================================
 CREATE TABLE IF NOT EXISTS tentativas_prova (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -98,8 +127,9 @@ CREATE TABLE IF NOT EXISTS tentativas_prova (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================
 -- 7. TABELA: certificados
--- Certificados emitidos
+-- ============================================
 CREATE TABLE IF NOT EXISTS certificados (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -111,8 +141,9 @@ CREATE TABLE IF NOT EXISTS certificados (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ============================================
 -- 8. TABELA: progresso_usuario
--- Progresso nos episódios
+-- ============================================
 CREATE TABLE IF NOT EXISTS progresso_usuario (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -145,6 +176,12 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tr_usuarios_updated_at ON usuarios;
+DROP TRIGGER IF EXISTS tr_temporadas_updated_at ON temporadas;
+DROP TRIGGER IF EXISTS tr_episodios_updated_at ON episodios;
+DROP TRIGGER IF EXISTS tr_provas_updated_at ON provas;
+DROP TRIGGER IF EXISTS tr_progresso_updated_at ON progresso_usuario;
 
 CREATE TRIGGER tr_usuarios_updated_at
     BEFORE UPDATE ON usuarios
@@ -180,7 +217,10 @@ ALTER TABLE tentativas_prova ENABLE ROW LEVEL SECURITY;
 ALTER TABLE certificados ENABLE ROW LEVEL SECURITY;
 ALTER TABLE progresso_usuario ENABLE ROW LEVEL SECURITY;
 
+-- ============================================
 -- POLÍTICAS: usuarios
+-- ============================================
+
 -- Usuário pode ver seu próprio perfil
 CREATE POLICY "Usuários veem próprio perfil" ON usuarios
     FOR SELECT USING (auth.uid() = auth_id);
@@ -188,113 +228,121 @@ CREATE POLICY "Usuários veem próprio perfil" ON usuarios
 -- Admin pode ver todos os usuários
 CREATE POLICY "Admin vê todos usuários" ON usuarios
     FOR SELECT USING (
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
 -- Admin pode atualizar usuários
 CREATE POLICY "Admin atualiza usuários" ON usuarios
     FOR UPDATE USING (
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
 -- Usuário pode inserir próprio perfil
 CREATE POLICY "Usuário insere próprio perfil" ON usuarios
     FOR INSERT WITH CHECK (auth.uid() = auth_id);
 
--- Usuário pode atualizar próprio perfil (campos limitados)
+-- Usuário pode atualizar próprio perfil
 CREATE POLICY "Usuário atualiza próprio perfil" ON usuarios
     FOR UPDATE USING (auth.uid() = auth_id);
 
+-- ============================================
 -- POLÍTICAS: temporadas
--- Todos podem ver temporadas ativas
+-- ============================================
+
 CREATE POLICY "Todos veem temporadas ativas" ON temporadas
-    FOR SELECT USING (status IN ('ativa', 'encerrada') OR
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+    FOR SELECT USING (
+        status IN ('ativa', 'encerrada') OR
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
--- Admin pode gerenciar temporadas
 CREATE POLICY "Admin gerencia temporadas" ON temporadas
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
+-- ============================================
 -- POLÍTICAS: episodios
--- Usuários aprovados veem episódios publicados
+-- ============================================
+
 CREATE POLICY "Usuários veem episódios publicados" ON episodios
     FOR SELECT USING (
         status = 'publicado' OR
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
--- Admin pode gerenciar episódios
 CREATE POLICY "Admin gerencia episódios" ON episodios
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
+-- ============================================
 -- POLÍTICAS: provas
--- Usuários aprovados veem provas ativas
+-- ============================================
+
 CREATE POLICY "Usuários veem provas ativas" ON provas
     FOR SELECT USING (
         ativa = true OR
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
--- Admin pode gerenciar provas
 CREATE POLICY "Admin gerencia provas" ON provas
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
+-- ============================================
 -- POLÍTICAS: questoes
--- Usuários veem questões de provas ativas
+-- ============================================
+
 CREATE POLICY "Usuários veem questões" ON questoes
     FOR SELECT USING (
-        EXISTS (SELECT 1 FROM provas WHERE provas.id = questoes.prova_id AND provas.ativa = true) OR
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM provas p WHERE p.id = questoes.prova_id AND p.ativa = true) OR
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
--- Admin pode gerenciar questões
 CREATE POLICY "Admin gerencia questões" ON questoes
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
+-- ============================================
 -- POLÍTICAS: tentativas_prova
--- Usuário vê próprias tentativas
+-- ============================================
+
 CREATE POLICY "Usuário vê próprias tentativas" ON tentativas_prova
     FOR SELECT USING (
         usuario_id IN (SELECT id FROM usuarios WHERE auth_id = auth.uid()) OR
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
--- Usuário pode criar tentativa
 CREATE POLICY "Usuário cria tentativa" ON tentativas_prova
     FOR INSERT WITH CHECK (
         usuario_id IN (SELECT id FROM usuarios WHERE auth_id = auth.uid())
     );
 
+-- ============================================
 -- POLÍTICAS: certificados
--- Usuário vê próprios certificados
+-- ============================================
+
 CREATE POLICY "Usuário vê próprios certificados" ON certificados
     FOR SELECT USING (
         usuario_id IN (SELECT id FROM usuarios WHERE auth_id = auth.uid()) OR
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
--- Sistema pode criar certificado
 CREATE POLICY "Inserir certificado" ON certificados
     FOR INSERT WITH CHECK (true);
 
+-- ============================================
 -- POLÍTICAS: progresso_usuario
--- Usuário vê próprio progresso
+-- ============================================
+
 CREATE POLICY "Usuário vê próprio progresso" ON progresso_usuario
     FOR SELECT USING (
         usuario_id IN (SELECT id FROM usuarios WHERE auth_id = auth.uid()) OR
-        EXISTS (SELECT 1 FROM usuarios WHERE auth_id = auth.uid() AND is_admin = true)
+        EXISTS (SELECT 1 FROM usuarios u WHERE u.auth_id = auth.uid() AND u.is_admin = true)
     );
 
--- Usuário pode atualizar próprio progresso
 CREATE POLICY "Usuário atualiza progresso" ON progresso_usuario
     FOR ALL USING (
         usuario_id IN (SELECT id FROM usuarios WHERE auth_id = auth.uid())
@@ -304,8 +352,10 @@ CREATE POLICY "Usuário atualiza progresso" ON progresso_usuario
 -- VIEWS para facilitar consultas
 -- ============================================
 
--- View: Ranking público (só nickname)
-CREATE OR REPLACE VIEW ranking_publico AS
+DROP VIEW IF EXISTS ranking_publico;
+DROP VIEW IF EXISTS admin_estatisticas;
+
+CREATE VIEW ranking_publico AS
 SELECT 
     nickname,
     pontuacao_total,
@@ -314,8 +364,7 @@ FROM usuarios
 WHERE status = 'aprovado' AND pontuacao_total > 0
 ORDER BY pontuacao_total DESC;
 
--- View: Estatísticas do Admin
-CREATE OR REPLACE VIEW admin_estatisticas AS
+CREATE VIEW admin_estatisticas AS
 SELECT
     (SELECT COUNT(*) FROM usuarios) as total_usuarios,
     (SELECT COUNT(*) FROM usuarios WHERE status = 'pendente') as usuarios_pendentes,
@@ -329,12 +378,38 @@ SELECT
 -- DADOS INICIAIS
 -- ============================================
 
--- Inserir Temporada 0 (original do HTML)
+-- Inserir Temporada 0
 INSERT INTO temporadas (titulo, descricao, status, ordem) VALUES
 ('Temporada 0: O Início', 'Sua jornada de transformação para Analista de Qualidade.', 'ativa', 0)
 ON CONFLICT DO NOTHING;
 
--- Nota: O admin será criado automaticamente quando o email 
--- podcastnextlevell@gmail.com fizer login pela primeira vez
+-- ============================================
+-- 🔑 CRIAR PERFIL DO ADMIN
+-- ============================================
+-- Cria o perfil admin para o usuário já existente no auth.users
 
+INSERT INTO usuarios (
+    auth_id,
+    nome_completo,
+    nickname,
+    email,
+    is_admin,
+    status,
+    pontuacao_total
+)
+SELECT 
+    id as auth_id,
+    'Administrador' as nome_completo,
+    'Admin' as nickname,
+    email,
+    true as is_admin,
+    'aprovado' as status,
+    0 as pontuacao_total
+FROM auth.users 
+WHERE email = 'podcastnextlevell@gmail.com'
+ON CONFLICT (auth_id) DO UPDATE SET
+    is_admin = true,
+    status = 'aprovado';
+
+-- ============================================
 SELECT 'Schema criado com sucesso! 🎙️' as status;
