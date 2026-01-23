@@ -19,7 +19,7 @@ async function login(email, password) {
     try {
         showLoading(true);
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email.trim().toLowerCase(),
             password: password
         });
@@ -74,7 +74,7 @@ async function cadastrar(dados) {
         }
 
         // Criar usuário no Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
             email: email.trim().toLowerCase(),
             password: password,
             options: {
@@ -94,7 +94,7 @@ async function cadastrar(dados) {
         const isAdminUser = email.trim().toLowerCase() === ADMIN_EMAIL;
 
         // Criar perfil na tabela usuarios
-        const { error: profileError } = await supabase
+        const { error: profileError } = await supabaseClient
             .from('usuarios')
             .insert({
                 auth_id: authData.user.id,
@@ -136,7 +136,7 @@ async function cadastrar(dados) {
  */
 async function logout() {
     showLoading(true);
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     showLoading(false);
     window.location.href = 'index.html';
 }
@@ -150,7 +150,7 @@ async function recuperarSenha(email) {
     try {
         showLoading(true);
 
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
             redirectTo: window.location.origin + '/redefinir-senha.html'
         });
 
@@ -186,7 +186,7 @@ async function redefinirSenha(newPassword) {
             return { success: false, error: 'A senha deve ter no mínimo 6 caracteres.' };
         }
 
-        const { error } = await supabase.auth.updateUser({
+        const { error } = await supabaseClient.auth.updateUser({
             password: newPassword
         });
 
@@ -230,7 +230,7 @@ function traduzirErro(message) {
 /**
  * Listener para mudanças de autenticação
  */
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
     console.log('Auth event:', event);
 
     if (event === 'SIGNED_OUT') {

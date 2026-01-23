@@ -7,8 +7,8 @@
 const SUPABASE_URL = 'https://dnmeeirmjljmvbwcsdpx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRubWVlaXJtamxqbXZid2NzZHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4NzE0MjgsImV4cCI6MjA4NDQ0NzQyOH0.byVDQ9a1RtqI4WdyC89tDerYBjXaWCRU1jyLVrX8Q3Y';
 
-// Inicializar cliente Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Inicializar cliente Supabase (usando nome diferente para evitar conflito com CDN)
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================
 // Funções Utilitárias
@@ -19,7 +19,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  * @returns {Promise<Object|null>} Dados do usuário ou null
  */
 async function getUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     return user;
 }
 
@@ -30,13 +30,13 @@ async function getUser() {
 async function getUserProfile() {
     const user = await getUser();
     if (!user) return null;
-    
-    const { data, error } = await supabase
+
+    const { data, error } = await supabaseClient
         .from('usuarios')
         .select('*')
         .eq('auth_id', user.id)
         .single();
-    
+
     if (error) {
         console.error('Erro ao buscar perfil:', error);
         return null;
@@ -67,22 +67,22 @@ async function isAprovado() {
  */
 async function redirectByRole() {
     const profile = await getUserProfile();
-    
+
     if (!profile) {
         window.location.href = 'login.html';
         return;
     }
-    
+
     if (profile.status === 'pendente') {
         window.location.href = 'pendente.html';
         return;
     }
-    
+
     if (profile.status === 'reprovado') {
         window.location.href = 'reprovado.html';
         return;
     }
-    
+
     if (profile.is_admin) {
         window.location.href = 'admin/index.html';
     } else {
@@ -111,7 +111,7 @@ async function protectAdminPage() {
         window.location.href = '../login.html';
         return false;
     }
-    
+
     const admin = await isAdmin();
     if (!admin) {
         window.location.href = '../dashboard.html';
@@ -162,33 +162,33 @@ function showToast(message, type = 'info') {
     // Remove toast anterior se existir
     const existingToast = document.querySelector('.toast-notification');
     if (existingToast) existingToast.remove();
-    
+
     const colors = {
         success: 'bg-green-500',
         error: 'bg-red-500',
         warning: 'bg-yellow-500',
         info: 'bg-blue-500'
     };
-    
+
     const icons = {
         success: 'check_circle',
         error: 'error',
         warning: 'warning',
         info: 'info'
     };
-    
+
     const toast = document.createElement('div');
     toast.className = `toast-notification fixed top-4 right-4 z-50 ${colors[type]} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transform translate-x-full transition-transform duration-300`;
     toast.innerHTML = `
         <span class="material-symbols-outlined">${icons[type]}</span>
         <span>${message}</span>
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     // Animar entrada
     setTimeout(() => toast.classList.remove('translate-x-full'), 10);
-    
+
     // Remover após 4 segundos
     setTimeout(() => {
         toast.classList.add('translate-x-full');
@@ -202,7 +202,7 @@ function showToast(message, type = 'info') {
  */
 function showLoading(show = true) {
     let overlay = document.getElementById('loading-overlay');
-    
+
     if (show && !overlay) {
         overlay = document.createElement('div');
         overlay.id = 'loading-overlay';
