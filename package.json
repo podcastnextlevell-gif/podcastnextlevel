@@ -2,9 +2,6 @@
   "name": "next-level-podcast",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "build": "echo 'Static build'"
-  },
   "dependencies": {
     "@supabase/supabase-js": "^2.91.0",
     "dotenv": "^17.2.3"
