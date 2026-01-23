@@ -1,7 +1,7 @@
 # 📜 Histórico de Desenvolvimento - Next Level Podcast
 
-**Data Atualização:** 2026-01-22
-**Sprint:** 2 - Refinamento de Interface e Correções
+**Data Atualização:** 2026-01-23
+**Sprint:** 3 - Conteúdo, Gamificação e Publicação
 
 ---
 
@@ -12,18 +12,30 @@
 - **14 páginas HTML** funcionais
 - **Banco de Dados:** Schema SQL completo criado e executado.
 - **Autenticação:** Login, Cadastro, Recuperação de Senha.
-- **RLS (Segurança):** Configurado e testado (Admin vê tudo, usuários veem dados permitidos).
 
-### Sprint 2: Refinamento de Admin e Sidebar (2026-01-22)
-- **Redesign da Sidebar:**
-    - Reestruturação por domínios (Visão Geral, Pessoas, Conteúdo).
-    - Melhoria visual (títulos de seção, espaçamento, tipografia).
-- **Correções de Layout:**
-    - Correção do problema de itens "inline" na sidebar.
-    - Implementação de `flex-col` e `w-full` para links clicáveis.
-- **Admin:**
-    - Usuário Admin principal configurado (`podcastnextlevell@gmail.com`).
-    - Temporada 0 (Teste) criada automaticamente.
+### Sprint 2: Refinamento de Admin e Sidebar (Concluído)
+- **Redesign da Sidebar:** Melhoria visual e estrutural.
+- **Admin:** Configuração de acesso e temporada inicial.
+
+### Sprint 3: Conteúdo, Gamificação e Publicação (2026-01-23)
+- **Ingestão Massiva de Dados:** 
+    - Popular banco com a grade completa: 9 temporadas, 48 episódios e Quizzes.
+- **Sistema de Gamificação:**
+    - Criado sistema de pontuação via Triggers e RPC.
+    - Ranking funcional no dashboard e página de ranking.
+- **Certificados Profissionais:**
+    - Nova página `certificado.html` pronta para impressão.
+    - Captura de Nome do Aluno e Carga Horária no momento da emissão.
+- **Materiais de Apoio:**
+    - Botão de download no `player.html` vinculado a cada episódio.
+    - Upload automático via Admin no novo bucket `materiais`.
+- **Correções & UX:**
+    - Corrigido bug de progressão de episódios.
+    - Adicionados modais de Termos de Uso e Privacidade em `cadastro.html`.
+- **Publicação (Deploy):**
+    - Configurado `vercel.json` com `rewrites` para garantir o funcionamento de URLs amigáveis.
+    - Adicionado script de build ao `package.json` para melhor detecção por plataformas de deploy.
+    - Código sincronizado com repositório remoto via Git.
 
 ### Arquivos JavaScript
 | Arquivo | Descrição |
@@ -31,75 +43,30 @@
 | `js/supabase-config.js` | Configuração do cliente Supabase + funções utilitárias |
 | `js/auth.js` | Login, cadastro, recuperação de senha, proteção de rotas |
 
-### Schema do Banco de Dados (`sql/schema.sql`)
-| Tabela | Descrição |
-|--------|-----------|
-| `usuarios` | Perfis de usuários com status de aprovação |
-| `temporadas` | Temporadas do podcast |
-| `episodios` | Episódios vinculados às temporadas |
-| `provas` | Provas por temporada |
-| `questoes` | Questões das provas (JSONB para opções) |
-| `tentativas_prova` | Histórico de tentativas |
-| `certificados` | Certificados emitidos |
-| `progresso_usuario` | Progresso nos episódios |
-
-### Páginas Públicas
-| Página | Funcionalidade |
-|--------|----------------|
-| `index.html` | Landing page com CTA "Iniciar Jornada" |
-| `login.html` | Login com reconhecimento de perfil |
-| `cadastro.html` | Cadastro com todos os campos obrigatórios |
-| `pendente.html` | Tela de aguardando aprovação |
-| `recuperar-senha.html` | Recuperação de senha via email |
-| `dashboard.html` | Dashboard do usuário com estatísticas |
-| `player.html` | Player de podcast com layout original |
-| `prova.html` | Interface de provas com correção automática |
-| `ranking.html` | Ranking público com pódio |
-
-### Páginas Admin
-| Página | Funcionalidade |
-|--------|----------------|
-| `admin/index.html` | Dashboard com métricas e aprovação rápida |
-| `admin/usuarios.html` | CRUD de usuários + aprovação |
-| `admin/temporadas.html` | CRUD de temporadas |
-| `admin/episodios.html` | CRUD de episódios + upload |
-| `admin/provas.html` | CRUD de provas e questões |
-| `admin/certificados.html` | Visualização de certificados |
-
 ---
 
 ## ⚙️ O QUE FOI CONFIGURADO
 
-- **TailwindCSS via CDN** em todas as páginas
-- **Google Fonts (Inter)** como fonte padrão
-- **Material Symbols** para ícones
-- **Supabase Client JS** via CDN
-- **Row Level Security (RLS)** no schema SQL
-- **Triggers** para `updated_at` automático
-- **Índices** para performance
+- **Supabase Storage:** Buckets `audios`, `imagens` e `materiais` configurados.
+- **Database Functions:** `increment_pontuacao` para gamificação segura.
+- **Clean URLs:** Configurado via `vercel.json` para remover `.html` dos links.
 
 ---
 
 ## 🔧 PENDÊNCIAS / PRÓXIMOS PASSOS
 
-### 1. Upload de Arquivos (Storage) - ✅ Concluído
-- Criados buckets `audios` e `imagens` no Supabase Storage.
-- Implementado upload no `admin/episodios.html` e `admin/temporadas.html`.
-- Configurado RLS para segurança dos arquivos.
+### 1. Testes de Usuário Real
+- Verificar emissão do certificado após conclusão total de uma temporada.
 
-### 2. Testes de Fluxo
-- Testar fluxo completo de usuário comum (Cadastro -> Aprovação -> Acesso -> Prova).
-
-### 3. Deploy
-- Conectar ao Vercel para hospedagem.
+### 2. Refinamento Visual (Estética Premium)
+- Adicionar micro-animações nas transições entre episódios.
 
 ---
 
 ## 📝 OBSERVAÇÕES TÉCNICAS
 
-- **Autenticação:** Usa Supabase Auth com reconhecimento automático de admin
-- **Admin fixo:** `podcastnextlevell@gmail.com`
-- **Sistema de bloqueio:** Episódios são desbloqueados progressivamente
-- **Simulação de áudio:** Player funciona mesmo sem arquivos mp3
-- **Realtime:** Preparado para Supabase Realtime (já usa a biblioteca)
+- **Certificados:** Gerados dinamicamente via HTML, permitindo "Salvar como PDF" pelo navegador.
+- **Gamificação:** A pontuação é incrementada apenas na primeira aprovação em cada quiz.
+- **Deploy:** Compatível com Vercel e Netlify.
+
 
