@@ -3,6 +3,7 @@
 -- ============================================
 -- Execute este script no SQL Editor do Supabase
 -- URL: https://supabase.com/dashboard/project/dnmeeirmjljmvbwcsdpx/sql
+-- VALIDADO EM: 2026-01-22 (Sprint 2)
 -- ============================================
 
 -- ============================================

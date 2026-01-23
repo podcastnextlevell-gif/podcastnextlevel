@@ -1,15 +1,29 @@
 # 📜 Histórico de Desenvolvimento - Next Level Podcast
 
-**Data:** 2026-01-22  
-**Sprint:** 1 - Infraestrutura e Páginas Base
+**Data Atualização:** 2026-01-22
+**Sprint:** 2 - Refinamento de Interface e Correções
 
 ---
 
 ## ✅ O QUE FOI FEITO
 
-### Estrutura do Projeto
+### Sprint 1: Infraestrutura e Base (Concluído)
 - Criadas pastas: `js/`, `css/`, `admin/`, `assets/`, `sql/`
-- Total de **14 páginas HTML** funcionais
+- **14 páginas HTML** funcionais
+- **Banco de Dados:** Schema SQL completo criado e executado.
+- **Autenticação:** Login, Cadastro, Recuperação de Senha.
+- **RLS (Segurança):** Configurado e testado (Admin vê tudo, usuários veem dados permitidos).
+
+### Sprint 2: Refinamento de Admin e Sidebar (2026-01-22)
+- **Redesign da Sidebar:**
+    - Reestruturação por domínios (Visão Geral, Pessoas, Conteúdo).
+    - Melhoria visual (títulos de seção, espaçamento, tipografia).
+- **Correções de Layout:**
+    - Correção do problema de itens "inline" na sidebar.
+    - Implementação de `flex-col` e `w-full` para links clicáveis.
+- **Admin:**
+    - Usuário Admin principal configurado (`podcastnextlevell@gmail.com`).
+    - Temporada 0 (Teste) criada automaticamente.
 
 ### Arquivos JavaScript
 | Arquivo | Descrição |
@@ -66,22 +80,17 @@
 
 ---
 
-## 🔧 CONFIGURAÇÕES PENDENTES
+## 🔧 PENDÊNCIAS / PRÓXIMOS PASSOS
 
-### 1. Executar Schema SQL no Supabase
-O usuário deve:
-1. Acessar https://supabase.com/dashboard/project/dnmeeirmjljmvbwcsdpx/sql
-2. Colar o conteúdo de `sql/schema.sql`
-3. Clicar em "Run"
+### 1. Upload de Arquivos (Storage)
+- Criar bucket `audios` e `imagens` no Supabase Storage.
+- Implementar upload no `admin/episodios.html` (frontend já preparado, falta integração JS).
 
-### 2. Configurar Storage (opcional)
-Para upload de áudios:
-1. Criar bucket `audios` no Supabase Storage
-2. Configurar políticas de acesso
+### 2. Testes de Fluxo
+- Testar fluxo completo de usuário comum (Cadastro -> Aprovação -> Acesso -> Prova).
 
-### 3. Deploy no Vercel
-1. Conectar o repositório ou fazer upload da pasta
-2. Não é necessário build - são arquivos estáticos
+### 3. Deploy
+- Conectar ao Vercel para hospedagem.
 
 ---
 
@@ -93,13 +102,3 @@ Para upload de áudios:
 - **Simulação de áudio:** Player funciona mesmo sem arquivos mp3
 - **Realtime:** Preparado para Supabase Realtime (já usa a biblioteca)
 
----
-
-## 🚀 PRÓXIMOS PASSOS
-
-1. Executar o schema SQL no Supabase
-2. Cadastrar o admin principal
-3. Criar primeira temporada de teste
-4. Criar episódios de teste
-5. Testar fluxo completo de usuário
-6. Deploy no Vercel
