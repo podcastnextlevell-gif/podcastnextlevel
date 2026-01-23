@@ -166,71 +166,81 @@
                     <p id="stat-episodios" class="text-xs text-slate-500 mt-1">- episódios publicados</p>
                 </div>
 
-                <div class="glass-panel rounded-2xl p-5">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-slate-400 text-sm">Certificados Emitidos</span>
-                        <span class="material-symbols-outlined text-purple-400">workspace_premium</span>
-                    </div>
-                    <p id="stat-certificados" class="text-3xl font-bold">0</p>
-                    <p id="stat-media" class="text-xs text-slate-500 mt-1">Média: -</p>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-slate-400 text-sm">Certificados Emitidos</span>
+                    <span class="material-symbols-outlined text-purple-400">workspace_premium</span>
                 </div>
-            </section>
+                <p id="stat-certificados" class="text-3xl font-bold">0</p>
+                <p id="stat-media" class="text-xs text-slate-500 mt-1">Média: -</p>
+    </div>
 
-            <!-- Two Column Layout -->
-            <div class="grid lg:grid-cols-2 gap-6">
-                <!-- Usuários Pendentes -->
-                <section class="glass-panel rounded-2xl p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="font-bold flex items-center gap-2">
-                            <span class="material-symbols-outlined text-yellow-400">pending</span>
-                            Aguardando Aprovação
-                        </h2>
-                        <a href="usuarios.html?status=pendente" class="text-xs text-aec-pink hover:underline">Ver
-                            todos</a>
-                    </div>
+    <div class="glass-panel rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm">Taxa de Satisfação</span>
+            <span class="material-symbols-outlined text-yellow-400">star</span>
+        </div>
+        <p id="stat-satisfacao" class="text-3xl font-bold flex items-center gap-2">
+            - <span class="text-lg text-slate-500 font-normal">/ 5.0</span>
+        </p>
+        <p id="stat-total-avaliacoes" class="text-xs text-slate-500 mt-1">0 avaliações</p>
+    </div>
+    </section>
 
-                    <div id="pendentes-list" class="space-y-3">
-                        <div class="text-center py-8 text-slate-500">
-                            <span class="material-symbols-outlined text-3xl mb-2">check_circle</span>
-                            <p class="text-sm">Nenhum usuário pendente</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Top Ranking -->
-                <section class="glass-panel rounded-2xl p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="font-bold flex items-center gap-2">
-                            <span class="material-symbols-outlined text-aec-pink">leaderboard</span>
-                            Top 5 Ranking
-                        </h2>
-                        <a href="../ranking.html" class="text-xs text-aec-pink hover:underline">Ver completo</a>
-                    </div>
-
-                    <div id="ranking-list" class="space-y-3">
-                        <div class="text-center py-8 text-slate-500">
-                            <span class="material-symbols-outlined text-3xl mb-2">emoji_events</span>
-                            <p class="text-sm">Nenhum usuário ranqueado</p>
-                        </div>
-                    </div>
-                </section>
+    <!-- Two Column Layout -->
+    <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Usuários Pendentes -->
+        <section class="glass-panel rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-yellow-400">pending</span>
+                    Aguardando Aprovação
+                </h2>
+                <a href="usuarios.html?status=pendente" class="text-xs text-aec-pink hover:underline">Ver
+                    todos</a>
             </div>
 
-            <!-- Recent Activity -->
-            <section class="mt-6 glass-panel rounded-2xl p-6">
-                <h2 class="font-bold flex items-center gap-2 mb-4">
-                    <span class="material-symbols-outlined text-blue-400">history</span>
-                    Atividade Recente
-                </h2>
-
-                <div id="activity-list" class="space-y-3">
-                    <div class="text-center py-8 text-slate-500">
-                        <span class="material-symbols-outlined text-3xl mb-2">schedule</span>
-                        <p class="text-sm">Nenhuma atividade recente</p>
-                    </div>
+            <div id="pendentes-list" class="space-y-3">
+                <div class="text-center py-8 text-slate-500">
+                    <span class="material-symbols-outlined text-3xl mb-2">check_circle</span>
+                    <p class="text-sm">Nenhum usuário pendente</p>
                 </div>
-            </section>
-        </main>
+            </div>
+        </section>
+
+        <!-- Top Ranking -->
+        <section class="glass-panel rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-aec-pink">leaderboard</span>
+                    Top 5 Ranking
+                </h2>
+                <a href="../ranking.html" class="text-xs text-aec-pink hover:underline">Ver completo</a>
+            </div>
+
+            <div id="ranking-list" class="space-y-3">
+                <div class="text-center py-8 text-slate-500">
+                    <span class="material-symbols-outlined text-3xl mb-2">emoji_events</span>
+                    <p class="text-sm">Nenhum usuário ranqueado</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Recent Activity -->
+    <section class="mt-6 glass-panel rounded-2xl p-6">
+        <h2 class="font-bold flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-blue-400">history</span>
+            Atividade Recente
+        </h2>
+
+        <div id="activity-list" class="space-y-3">
+            <div class="text-center py-8 text-slate-500">
+                <span class="material-symbols-outlined text-3xl mb-2">schedule</span>
+                <p class="text-sm">Nenhuma atividade recente</p>
+            </div>
+        </div>
+    </section>
+    </main>
     </div>
 
     <script src="../js/supabase-config.js"></script>
@@ -300,6 +310,22 @@
                     const media = (certificados.reduce((sum, c) => sum + parseFloat(c.nota), 0) / certificados.length).toFixed(1);
                     document.getElementById('stat-media').textContent = `Média: ${media}`;
                 }
+            }
+
+            // Taxa de Satisfação
+            const { data: avaliacoes } = await supabaseClient
+                .from('avaliacoes_temporada')
+                .select('nota');
+
+            if (avaliacoes && avaliacoes.length > 0) {
+                const totalNota = avaliacoes.reduce((sum, a) => sum + a.nota, 0);
+                const mediaSatisfacao = (totalNota / avaliacoes.length).toFixed(1);
+
+                document.getElementById('stat-satisfacao').innerHTML = `${mediaSatisfacao} <span class="text-lg text-slate-500 font-normal">/ 5.0</span>`;
+                document.getElementById('stat-total-avaliacoes').textContent = `${avaliacoes.length} avaliações`;
+            } else {
+                document.getElementById('stat-satisfacao').innerHTML = `N/A <span class="text-lg text-slate-500 font-normal"></span>`;
+                document.getElementById('stat-total-avaliacoes').textContent = `0 avaliações`;
             }
 
             // Usuários pendentes

@@ -261,6 +261,23 @@
         </div>
     </div>
 
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80" onclick="closeFeedbackModal()"></div>
+        <div class="relative glass-panel rounded-3xl p-6 w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-700">
+                <h2 id="feedback-modal-title" class="text-xl font-bold">Feedback da Temporada</h2>
+                <button onclick="closeFeedbackModal()" class="text-slate-400 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div id="feedback-list" class="overflow-y-auto space-y-3 pr-2 flex-1">
+                <!-- Avaliações aqui -->
+            </div>
+        </div>
+    </div>
+
     <script src="../js/supabase-config.js"></script>
     <script src="../js/auth.js"></script>
     <script>
@@ -347,6 +364,9 @@
                             </div>
                             
                             <div class="flex gap-2">
+                                <button onclick="openFeedbackModal('${temp.id}', '${temp.titulo}')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1 text-yellow-400">
+                                    <span class="material-symbols-outlined text-sm">star</span> Feedback
+                                </button>
                                 <button onclick="editTemporada('${temp.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1">
                                     <span class="material-symbols-outlined text-sm">edit</span> Editar
                                 </button>
@@ -358,6 +378,51 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        // --- FEEDBACK SYSTEM ---
+
+        async function openFeedbackModal(temporadaId, titulo) {
+            document.getElementById('feedback-modal-title').textContent = `Feedback - ${titulo}`;
+            const container = document.getElementById('feedback-list');
+            container.innerHTML = '<p class="text-center text-slate-500 py-4">Carregando avaliações...</p>';
+            document.getElementById('feedback-modal').classList.remove('hidden');
+
+            const { data: avaliacoes, error } = await supabaseClient
+                .from('avaliacoes_temporada')
+                .select('*, usuarios(nome_completo, nickname)')
+                .eq('temporada_id', temporadaId)
+                .order('created_at', { ascending: false });
+
+            if (error || !avaliacoes.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <span class="material-symbols-outlined text-3xl mb-2">chat_bubble_outline</span>
+                        <p>Nenhuma avaliação recebida para esta temporada.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = avaliacoes.map(a => `
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white text-sm">${a.usuarios?.nome_completo || 'Anônimo'}</span>
+                            <span class="text-xs text-slate-500">(${a.usuarios?.nickname})</span>
+                        </div>
+                        <div class="flex text-yellow-400 text-xs">
+                            ${'★'.repeat(a.nota)}${'☆'.repeat(5 - a.nota)}
+                        </div>
+                    </div>
+                    <p class="text-slate-300 text-sm italic">"${a.comentario || 'Sem comentário'}"</p>
+                    <p class="text-[10px] text-slate-500 mt-2 text-right">${formatDate(a.created_at)}</p>
+                </div>
+            `).join('');
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedback-modal').classList.add('hidden');
         }
 
         // --- UPLOAD SYSTEM ---

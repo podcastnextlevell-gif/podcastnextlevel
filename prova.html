@@ -126,6 +126,55 @@
                 </a>
             </div>
         </div>
+        <!-- Feedback Modal -->
+        <div id="feedback-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/80" onclick="skipFeedback()"></div>
+            <div class="relative glass-panel rounded-3xl p-8 w-full max-w-lg text-center">
+                <div class="mb-6">
+                    <span class="material-symbols-outlined text-5xl text-yellow-400 mb-2">star</span>
+                    <h2 class="text-2xl font-bold text-white">Avalie a Temporada</h2>
+                    <p class="text-slate-400 text-sm">O que você achou deste conteúdo?</p>
+                </div>
+
+                <div class="flex justify-center gap-2 mb-6" id="star-rating">
+                    <button onclick="setRating(1)"
+                        class="star-btn text-slate-600 hover:text-yellow-400 transition-colors" data-value="1">
+                        <span class="material-symbols-outlined text-4xl">star</span>
+                    </button>
+                    <button onclick="setRating(2)"
+                        class="star-btn text-slate-600 hover:text-yellow-400 transition-colors" data-value="2">
+                        <span class="material-symbols-outlined text-4xl">star</span>
+                    </button>
+                    <button onclick="setRating(3)"
+                        class="star-btn text-slate-600 hover:text-yellow-400 transition-colors" data-value="3">
+                        <span class="material-symbols-outlined text-4xl">star</span>
+                    </button>
+                    <button onclick="setRating(4)"
+                        class="star-btn text-slate-600 hover:text-yellow-400 transition-colors" data-value="4">
+                        <span class="material-symbols-outlined text-4xl">star</span>
+                    </button>
+                    <button onclick="setRating(5)"
+                        class="star-btn text-slate-600 hover:text-yellow-400 transition-colors" data-value="5">
+                        <span class="material-symbols-outlined text-4xl">star</span>
+                    </button>
+                </div>
+
+                <textarea id="feedback-comment" rows="3"
+                    class="w-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-white resize-none mb-6 placeholder-slate-500"
+                    placeholder="Deixe um comentário (opcional)..."></textarea>
+
+                <div class="space-y-3">
+                    <button onclick="submitFeedback()"
+                        class="w-full bg-aec-pink hover:bg-aec-pinkDark text-white font-bold py-3 rounded-xl transition-all">
+                        Enviar Avaliação
+                    </button>
+                    <button onclick="skipFeedback()" class="text-slate-500 hover:text-white text-sm">
+                        Pular
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script src="js/supabase-config.js"></script>
@@ -135,6 +184,7 @@
         let prova = null;
         let questoes = [];
         let startTime = null;
+        let currentRating = 0;
 
         async function init() {
             const user = await getUser();
@@ -340,6 +390,12 @@
                 document.getElementById('result-title').textContent = 'Parabéns! Aprovado!';
                 document.getElementById('result-title').className = 'text-3xl font-bold mb-2 text-green-400';
                 document.getElementById('result-message').textContent = 'Você completou a prova com sucesso!';
+
+                // Show Feedback Modal after short delay
+                setTimeout(() => {
+                    document.getElementById('feedback-modal').classList.remove('hidden');
+                }, 1500);
+
             } else {
                 resultCard.classList.add('border', 'border-red-500/30');
                 document.getElementById('result-icon').innerHTML = `<span class="material-symbols-outlined text-6xl text-red-400">sentiment_dissatisfied</span>`;
@@ -355,6 +411,55 @@
             if (certificadoGerado) {
                 document.getElementById('certificado-section').classList.remove('hidden');
             }
+        }
+
+        // --- Feedback Logic ---
+
+        function setRating(val) {
+            currentRating = val;
+            const buttons = document.querySelectorAll('.star-btn');
+
+            buttons.forEach(btn => {
+                const btnVal = parseInt(btn.dataset.value);
+                if (btnVal <= val) {
+                    btn.classList.add('text-yellow-400');
+                    btn.classList.remove('text-slate-600');
+                    btn.querySelector('span').textContent = 'star';
+                } else {
+                    btn.classList.add('text-slate-600');
+                    btn.classList.remove('text-yellow-400');
+                    btn.querySelector('span').textContent = 'star'; // Keep full star icon, just change color
+                }
+            });
+        }
+
+        async function submitFeedback() {
+            if (!currentRating) {
+                alert('Por favor, selecione uma nota de 1 a 5 estrelas.');
+                return;
+            }
+
+            const comment = document.getElementById('feedback-comment').value;
+
+            const { error } = await supabaseClient.from('avaliacoes_temporada').insert({
+                usuario_id: userProfile.id,
+                temporada_id: prova.temporada_id,
+                nota: currentRating,
+                comentario: comment || null
+            });
+
+            if (error) {
+                console.error('Erro ao enviar feedback:', error);
+                alert('Erro ao enviar avaliação.');
+                return;
+            }
+
+            document.getElementById('feedback-modal').classList.add('hidden');
+            showToast('Obrigado pelo seu feedback! ⭐', 'success');
+        }
+
+        function skipFeedback() {
+            document.getElementById('feedback-modal').classList.add('hidden');
         }
 
         init();
