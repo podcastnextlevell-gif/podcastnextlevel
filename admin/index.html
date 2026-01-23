@@ -49,11 +49,15 @@
         }
 
         .sidebar-link {
-            @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all;
+            @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all text-sm font-medium;
         }
 
         .sidebar-link.active {
-            @apply text-white bg-aec-pink/20 border border-aec-pink/30;
+            @apply text-white bg-aec-pink/10 border border-aec-pink/20 text-aec-pink;
+        }
+
+        .sidebar-section {
+            @apply px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 mt-4;
         }
     </style>
 </head>
@@ -73,32 +77,38 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 p-4 space-y-2">
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+
+                <div class="sidebar-section">Visão Geral</div>
                 <a href="index.html" class="sidebar-link active">
-                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="material-symbols-outlined text-[20px]">dashboard</span>
                     Dashboard
                 </a>
+
+                <div class="sidebar-section">Gestão de Pessoas</div>
                 <a href="usuarios.html" class="sidebar-link">
-                    <span class="material-symbols-outlined">group</span>
+                    <span class="material-symbols-outlined text-[20px]">group</span>
                     Usuários
                     <span id="badge-pendentes"
-                        class="hidden ml-auto px-2 py-0.5 bg-yellow-500 text-black text-xs font-bold rounded-full"></span>
+                        class="hidden ml-auto px-1.5 py-0.5 bg-yellow-500 text-black text-[10px] font-bold rounded-full"></span>
                 </a>
+                <a href="certificados.html" class="sidebar-link">
+                    <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
+                    Certificados
+                </a>
+
+                <div class="sidebar-section">Conteúdo</div>
                 <a href="temporadas.html" class="sidebar-link">
-                    <span class="material-symbols-outlined">subscriptions</span>
+                    <span class="material-symbols-outlined text-[20px]">subscriptions</span>
                     Temporadas
                 </a>
                 <a href="episodios.html" class="sidebar-link">
-                    <span class="material-symbols-outlined">headphones</span>
+                    <span class="material-symbols-outlined text-[20px]">headphones</span>
                     Episódios
                 </a>
                 <a href="provas.html" class="sidebar-link">
-                    <span class="material-symbols-outlined">quiz</span>
+                    <span class="material-symbols-outlined text-[20px]">quiz</span>
                     Provas
-                </a>
-                <a href="certificados.html" class="sidebar-link">
-                    <span class="material-symbols-outlined">workspace_premium</span>
-                    Certificados
                 </a>
             </nav>
 
