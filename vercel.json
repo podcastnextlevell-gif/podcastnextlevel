@@ -1,16 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/login", "destination": "/login.html" },
-    { "source": "/cadastro", "destination": "/cadastro.html" },
-    { "source": "/admin", "destination": "/admin/index.html" },
-    { "source": "/admin/episodios", "destination": "/admin/episodios.html" },
-    { "source": "/admin/temporadas", "destination": "/admin/temporadas.html" },
-    { "source": "/admin/usuarios", "destination": "/admin/usuarios.html" },
-    { "source": "/player", "destination": "/player.html" },
-    { "source": "/ranking", "destination": "/ranking.html" },
-    { "source": "/certificado", "destination": "/certificado.html" },
-    { "source": "/(.*)", "destination": "/$1" }
-  ],
-  "cleanUrls": true
+  "cleanUrls": true,
+  "trailingSlash": false
 }
