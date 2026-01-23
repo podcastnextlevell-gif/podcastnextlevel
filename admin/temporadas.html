@@ -181,11 +181,43 @@
                         placeholder="Descrição da temporada..."></textarea>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">URL da Imagem de Capa</label>
-                    <input type="url" id="imagem_capa"
-                        class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
-                        placeholder="https://...">
+                <!-- Upload de Capa -->
+                <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Imagem de Capa</label>
+
+                    <div class="flex gap-4">
+                        <!-- Preview -->
+                        <div class="w-24 h-24 bg-slate-800 rounded-lg overflow-hidden shrink-0 border border-slate-700">
+                            <img id="image-preview" src="" class="w-full h-full object-cover hidden">
+                            <div id="image-placeholder"
+                                class="w-full h-full flex items-center justify-center text-slate-600">
+                                <span class="material-symbols-outlined text-3xl">image</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-1">
+                            <!-- Input File -->
+                            <label class="block cursor-pointer mb-2">
+                                <span
+                                    class="block w-full text-center bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-lg py-2 text-sm text-slate-400 transition-all">
+                                    Selecionar Imagem
+                                </span>
+                                <input type="file" id="image-file" accept="image/*" class="hidden"
+                                    onchange="handleFileSelect(this)">
+                            </label>
+
+                            <!-- Progress & Status -->
+                            <div id="image-progress" class="hidden w-full bg-slate-800 rounded-full h-1.5 mb-2">
+                                <div class="bg-aec-pink h-1.5 rounded-full transition-all duration-300"
+                                    style="width: 0%"></div>
+                            </div>
+
+                            <!-- Hidden URL Input -->
+                            <input type="url" id="imagem_capa"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 px-3 text-[10px] text-slate-500"
+                                placeholder="URL da imagem" readonly>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -328,6 +360,42 @@
             }).join('');
         }
 
+        // --- UPLOAD SYSTEM ---
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('image-preview').classList.remove('hidden');
+                document.getElementById('image-placeholder').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function uploadFile(file) {
+            const timestamp = Date.now();
+            const ext = file.name.split('.').pop();
+            const filename = `${timestamp}_${Math.random().toString(36).substr(2, 9)}.${ext}`;
+            const filePath = `${filename}`;
+
+            try {
+                const { data, error } = await supabaseClient.storage.from('imagens').upload(filePath, file);
+
+                if (error) throw error;
+
+                const { data: { publicUrl } } = supabaseClient.storage.from('imagens').getPublicUrl(filePath);
+                return publicUrl;
+            } catch (error) {
+                console.error('Upload error:', error);
+                throw error;
+            }
+        }
+
+        // --- MODAL & FORM ---
+
         function openModal(temporada = null) {
             document.getElementById('modal-title').textContent = temporada ? 'Editar Temporada' : 'Nova Temporada';
             document.getElementById('temporada-id').value = temporada?.id || '';
@@ -338,6 +406,18 @@
             document.getElementById('data_fim').value = temporada?.data_fim || '';
             document.getElementById('status').value = temporada?.status || 'planejamento';
             document.getElementById('ordem').value = temporada?.ordem || 0;
+
+            // Reset Upload UI
+            document.getElementById('image-file').value = '';
+            if (temporada?.imagem_capa) {
+                document.getElementById('image-preview').src = temporada.imagem_capa;
+                document.getElementById('image-preview').classList.remove('hidden');
+                document.getElementById('image-placeholder').classList.add('hidden');
+            } else {
+                document.getElementById('image-preview').classList.add('hidden');
+                document.getElementById('image-placeholder').classList.remove('hidden');
+            }
+            document.getElementById('image-progress').classList.add('hidden');
 
             document.getElementById('modal').classList.remove('hidden');
         }
@@ -363,30 +443,58 @@
 
         document.getElementById('temporada-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Salvando...';
 
-            const id = document.getElementById('temporada-id').value;
-            const dados = {
-                titulo: document.getElementById('titulo').value,
-                descricao: document.getElementById('descricao').value,
-                imagem_capa: document.getElementById('imagem_capa').value || null,
-                data_inicio: document.getElementById('data_inicio').value || null,
-                data_fim: document.getElementById('data_fim').value || null,
-                status: document.getElementById('status').value,
-                ordem: parseInt(document.getElementById('ordem').value) || 0
-            };
+            try {
+                // UPLOAD
+                const imageFile = document.getElementById('image-file').files[0];
+                let imageUrl = document.getElementById('imagem_capa').value;
 
-            let error;
-            if (id) {
-                ({ error } = await supabaseClient.from('temporadas').update(dados).eq('id', id));
-            } else {
-                ({ error } = await supabaseClient.from('temporadas').insert(dados));
+                if (imageFile) {
+                    submitBtn.textContent = 'Enviando Capa...';
+                    document.getElementById('image-progress').classList.remove('hidden');
+                    document.querySelector('#image-progress div').style.width = '50%';
+                    imageUrl = await uploadFile(imageFile);
+                    document.querySelector('#image-progress div').style.width = '100%';
+                }
+
+                // SAVE DB
+                submitBtn.textContent = 'Salvando Dados...';
+
+                const id = document.getElementById('temporada-id').value;
+                const dados = {
+                    titulo: document.getElementById('titulo').value,
+                    descricao: document.getElementById('descricao').value,
+                    imagem_capa: imageUrl || null,
+                    data_inicio: document.getElementById('data_inicio').value || null,
+                    data_fim: document.getElementById('data_fim').value || null,
+                    status: document.getElementById('status').value,
+                    ordem: parseInt(document.getElementById('ordem').value) || 0
+                };
+
+                let error;
+                if (id) {
+                    ({ error } = await supabaseClient.from('temporadas').update(dados).eq('id', id));
+                } else {
+                    ({ error } = await supabaseClient.from('temporadas').insert(dados));
+                }
+
+                if (error) throw error;
+
+                showToast(id ? 'Temporada atualizada!' : 'Temporada criada!', 'success');
+                closeModal();
+                await loadTemporadas();
+
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao salvar: ' + (error.message || error));
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             }
-
-            if (error) { alert('Erro ao salvar: ' + error.message); return; }
-
-            showToast(id ? 'Temporada atualizada!' : 'Temporada criada!', 'success');
-            closeModal();
-            await loadTemporadas();
         });
 
         async function logout() {
