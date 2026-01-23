@@ -162,7 +162,7 @@
 
         async function loadProva(id) {
             // Fetch prova
-            const { data: provaData, error } = await supabase
+            const { data: provaData, error } = await supabaseClient
                 .from('provas')
                 .select('*, temporadas(titulo)')
                 .eq('id', id)
@@ -178,7 +178,7 @@
             prova = provaData;
 
             // Fetch questões
-            const { data: questoesData } = await supabase
+            const { data: questoesData } = await supabaseClient
                 .from('questoes')
                 .select('*')
                 .eq('prova_id', id)
@@ -270,7 +270,7 @@
             const tempoGasto = Math.floor((Date.now() - startTime) / 1000);
 
             // Save attempt
-            const { data: tentativa, error: tentativaError } = await supabase
+            const { data: tentativa, error: tentativaError } = await supabaseClient
                 .from('tentativas_prova')
                 .insert({
                     usuario_id: userProfile.id,
@@ -293,7 +293,7 @@
 
             // Update user pontuação
             if (pontuacao > 0) {
-                await supabase.rpc('increment_pontuacao', {
+                await supabaseClient.rpc('increment_pontuacao', {
                     user_id: userProfile.id,
                     pontos: pontuacao
                 }).catch(() => {
@@ -309,7 +309,7 @@
             let certificadoGerado = false;
             if (aprovado) {
                 const codigo = generateCertificateCode();
-                const { error: certError } = await supabase
+                const { error: certError } = await supabaseClient
                     .from('certificados')
                     .insert({
                         usuario_id: userProfile.id,

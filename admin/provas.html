@@ -280,7 +280,7 @@
         }
 
         async function loadTemporadas() {
-            const { data } = await supabase.from('temporadas').select('*').order('ordem');
+            const { data } = await supabaseClient.from('temporadas').select('*').order('ordem');
             temporadas = data || [];
 
             const select = document.getElementById('prova-temporada');
@@ -292,7 +292,7 @@
         async function loadProvas() {
             const container = document.getElementById('provas-container');
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('provas')
                 .select('*, temporadas(titulo), questoes(id)')
                 .order('created_at', { ascending: false });
@@ -366,7 +366,7 @@
         async function loadQuestoes(provaId) {
             const container = document.getElementById(`questoes-${provaId}`);
 
-            const { data: questoes } = await supabase
+            const { data: questoes } = await supabaseClient
                 .from('questoes')
                 .select('*')
                 .eq('prova_id', provaId)
@@ -414,7 +414,7 @@
 
         async function deleteProva(id) {
             if (!confirm('Excluir esta prova e todas as questões?')) return;
-            const { error } = await supabase.from('provas').delete().eq('id', id);
+            const { error } = await supabaseClient.from('provas').delete().eq('id', id);
             if (error) { alert('Erro'); return; }
             showToast('Prova excluída', 'success');
             await loadProvas();
@@ -435,9 +435,9 @@
 
             let error;
             if (id) {
-                ({ error } = await supabase.from('provas').update(dados).eq('id', id));
+                ({ error } = await supabaseClient.from('provas').update(dados).eq('id', id));
             } else {
-                ({ error } = await supabase.from('provas').insert(dados));
+                ({ error } = await supabaseClient.from('provas').insert(dados));
             }
 
             if (error) { alert('Erro: ' + error.message); return; }
@@ -467,7 +467,7 @@
 
         async function deleteQuestao(id, provaId) {
             if (!confirm('Excluir esta questão?')) return;
-            const { error } = await supabase.from('questoes').delete().eq('id', id);
+            const { error } = await supabaseClient.from('questoes').delete().eq('id', id);
             if (error) { alert('Erro'); return; }
             await loadQuestoes(provaId);
         }
@@ -490,7 +490,7 @@
                 { value: 'D', label: document.getElementById('opcao-d').value }
             ].filter(o => o.label.trim());
 
-            const { error } = await supabase.from('questoes').insert({
+            const { error } = await supabaseClient.from('questoes').insert({
                 prova_id: provaId,
                 pergunta: document.getElementById('questao-pergunta').value,
                 opcoes: opcoes,
@@ -505,7 +505,7 @@
         });
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = '../index.html';
         }
 

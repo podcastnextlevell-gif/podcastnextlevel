@@ -224,7 +224,7 @@
         async function loadTemporadas() {
             const container = document.getElementById('temporadas-container');
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('temporadas')
                 .select('*')
                 .order('ordem', { ascending: true });
@@ -248,7 +248,7 @@
             }
 
             // Buscar contagem de episódios
-            const { data: episodios } = await supabase.from('episodios').select('temporada_id');
+            const { data: episodios } = await supabaseClient.from('episodios').select('temporada_id');
             const epCount = {};
             episodios?.forEach(ep => {
                 epCount[ep.temporada_id] = (epCount[ep.temporada_id] || 0) + 1;
@@ -331,7 +331,7 @@
         async function deleteTemporada(id) {
             if (!confirm('Excluir esta temporada? Os episódios vinculados também serão excluídos.')) return;
 
-            const { error } = await supabase.from('temporadas').delete().eq('id', id);
+            const { error } = await supabaseClient.from('temporadas').delete().eq('id', id);
             if (error) { alert('Erro ao excluir'); return; }
 
             showToast('Temporada excluída', 'success');
@@ -354,9 +354,9 @@
 
             let error;
             if (id) {
-                ({ error } = await supabase.from('temporadas').update(dados).eq('id', id));
+                ({ error } = await supabaseClient.from('temporadas').update(dados).eq('id', id));
             } else {
-                ({ error } = await supabase.from('temporadas').insert(dados));
+                ({ error } = await supabaseClient.from('temporadas').insert(dados));
             }
 
             if (error) { alert('Erro ao salvar: ' + error.message); return; }
@@ -367,7 +367,7 @@
         });
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = '../index.html';
         }
 

@@ -243,7 +243,7 @@
         }
 
         async function loadTemporadas() {
-            const { data } = await supabase.from('temporadas').select('*').order('ordem');
+            const { data } = await supabaseClient.from('temporadas').select('*').order('ordem');
             temporadas = data || [];
 
             const filterSelect = document.getElementById('filter-temporada');
@@ -258,7 +258,7 @@
         async function loadEpisodios() {
             const container = document.getElementById('episodios-container');
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('episodios')
                 .select('*, temporadas(titulo)')
                 .order('temporada_id')
@@ -364,7 +364,7 @@
 
         async function deleteEpisodio(id) {
             if (!confirm('Excluir este episódio?')) return;
-            const { error } = await supabase.from('episodios').delete().eq('id', id);
+            const { error } = await supabaseClient.from('episodios').delete().eq('id', id);
             if (error) { alert('Erro'); return; }
             showToast('Episódio excluído', 'success');
             await loadEpisodios();
@@ -387,9 +387,9 @@
 
             let error;
             if (id) {
-                ({ error } = await supabase.from('episodios').update(dados).eq('id', id));
+                ({ error } = await supabaseClient.from('episodios').update(dados).eq('id', id));
             } else {
-                ({ error } = await supabase.from('episodios').insert(dados));
+                ({ error } = await supabaseClient.from('episodios').insert(dados));
             }
 
             if (error) { alert('Erro: ' + error.message); return; }
@@ -400,7 +400,7 @@
         });
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = '../index.html';
         }
 

@@ -241,7 +241,7 @@
 
         async function loadDashboardData() {
             // Carregar estatísticas de usuários
-            const { data: usuarios } = await supabase
+            const { data: usuarios } = await supabaseClient
                 .from('usuarios')
                 .select('id, status');
 
@@ -263,11 +263,11 @@
             }
 
             // Temporadas e episódios
-            const { data: temporadas } = await supabase
+            const { data: temporadas } = await supabaseClient
                 .from('temporadas')
                 .select('id, status');
 
-            const { data: episodios } = await supabase
+            const { data: episodios } = await supabaseClient
                 .from('episodios')
                 .select('id, status');
 
@@ -280,7 +280,7 @@
             }
 
             // Certificados e média
-            const { data: certificados } = await supabase
+            const { data: certificados } = await supabaseClient
                 .from('certificados')
                 .select('nota');
 
@@ -305,7 +305,7 @@
         async function loadPendentes() {
             const container = document.getElementById('pendentes-list');
 
-            const { data: pendentes } = await supabase
+            const { data: pendentes } = await supabaseClient
                 .from('usuarios')
                 .select('*')
                 .eq('status', 'pendente')
@@ -343,7 +343,7 @@
         }
 
         async function aprovar(userId) {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('usuarios')
                 .update({ status: 'aprovado' })
                 .eq('id', userId);
@@ -360,7 +360,7 @@
         async function reprovar(userId) {
             if (!confirm('Tem certeza que deseja reprovar este usuário?')) return;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('usuarios')
                 .update({ status: 'reprovado' })
                 .eq('id', userId);
@@ -377,7 +377,7 @@
         async function loadRanking() {
             const container = document.getElementById('ranking-list');
 
-            const { data: ranking } = await supabase
+            const { data: ranking } = await supabaseClient
                 .from('usuarios')
                 .select('nickname, pontuacao_total')
                 .eq('status', 'aprovado')
@@ -409,7 +409,7 @@
             const container = document.getElementById('activity-list');
 
             // Buscar tentativas recentes
-            const { data: tentativas } = await supabase
+            const { data: tentativas } = await supabaseClient
                 .from('tentativas_prova')
                 .select('*, usuarios(nickname), provas(titulo)')
                 .order('created_at', { ascending: false })
@@ -436,7 +436,7 @@
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = '../index.html';
         }
 

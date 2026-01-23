@@ -211,7 +211,7 @@
         }
 
         async function loadUsers() {
-            const { data: users, error } = await supabase
+            const { data: users, error } = await supabaseClient
                 .from('usuarios')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -343,13 +343,13 @@
             if (!user) return;
 
             // Buscar certificados
-            const { data: certs } = await supabase
+            const { data: certs } = await supabaseClient
                 .from('certificados')
                 .select('*, temporadas(titulo)')
                 .eq('usuario_id', userId);
 
             // Buscar tentativas
-            const { data: tentativas } = await supabase
+            const { data: tentativas } = await supabaseClient
                 .from('tentativas_prova')
                 .select('*, provas(titulo)')
                 .eq('usuario_id', userId)
@@ -431,7 +431,7 @@
         }
 
         async function aprovar(userId) {
-            const { error } = await supabase.from('usuarios').update({ status: 'aprovado' }).eq('id', userId);
+            const { error } = await supabaseClient.from('usuarios').update({ status: 'aprovado' }).eq('id', userId);
             if (error) { alert('Erro ao aprovar'); return; }
             showToast('Usuário aprovado!', 'success');
             await loadUsers();
@@ -439,14 +439,14 @@
 
         async function reprovar(userId) {
             if (!confirm('Reprovar este usuário?')) return;
-            const { error } = await supabase.from('usuarios').update({ status: 'reprovado' }).eq('id', userId);
+            const { error } = await supabaseClient.from('usuarios').update({ status: 'reprovado' }).eq('id', userId);
             if (error) { alert('Erro ao reprovar'); return; }
             showToast('Usuário reprovado', 'warning');
             await loadUsers();
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = '../index.html';
         }
 

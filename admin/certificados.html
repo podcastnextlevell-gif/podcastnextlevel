@@ -170,7 +170,7 @@
         }
 
         async function loadCertificados() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('certificados')
                 .select('*, usuarios(nome_completo, nickname), temporadas(titulo)')
                 .order('created_at', { ascending: false });
@@ -241,7 +241,7 @@
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = '../index.html';
         }
 

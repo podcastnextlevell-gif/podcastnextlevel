@@ -196,7 +196,7 @@
         }
 
         async function loadRanking() {
-            const { data: ranking, error } = await supabase
+            const { data: ranking, error } = await supabaseClient
                 .from('usuarios')
                 .select('id, nickname, pontuacao_total')
                 .eq('status', 'aprovado')
@@ -265,7 +265,7 @@
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 
