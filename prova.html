@@ -245,6 +245,27 @@
             // Shuffle questões
             questoes = questoes.sort(() => Math.random() - 0.5);
 
+            // Fetch user attempts
+            const { data: tentativas } = await supabaseClient
+                .from('tentativas_prova')
+                .select('*')
+                .eq('usuario_id', userProfile.id)
+                .eq('prova_id', id);
+
+            // Check if already approved or max attempts reached
+            const aprovadoTentativa = tentativas?.find(t => t.aprovado);
+            if (aprovadoTentativa) {
+                alert('Você já foi aprovado nesta prova!');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            if (tentativas && tentativas.length >= 2) {
+                alert('Você atingiu o limite de 2 tentativas para esta prova.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
             renderProva();
         }
 
@@ -456,6 +477,18 @@
 
             document.getElementById('feedback-modal').classList.add('hidden');
             showToast('Obrigado pelo seu feedback! ⭐', 'success');
+
+            // Reward 5 points
+            await supabaseClient.rpc('increment_pontuacao', {
+                user_id: userProfile.id,
+                pontos: 5
+            }).catch(async () => {
+                // Fallback
+                const { data: u } = await supabaseClient.from('usuarios').select('pontuacao_total').eq('id', userProfile.id).single();
+                if (u) {
+                    await supabaseClient.from('usuarios').update({ pontuacao_total: u.pontuacao_total + 5 }).eq('id', userProfile.id);
+                }
+            });
         }
 
         function skipFeedback() {

@@ -200,7 +200,6 @@
                 .from('usuarios')
                 .select('id, nickname, pontuacao_total')
                 .eq('status', 'aprovado')
-                .gt('pontuacao_total', 0)
                 .order('pontuacao_total', { ascending: false });
 
             if (error || !ranking?.length) {

@@ -340,6 +340,14 @@
 
             progresso?.forEach(p => completedTracks.add(p.episodio_id));
 
+            // Check for certificate (Season Completed)
+            const { data: certificado } = await supabaseClient
+                .from('certificados')
+                .select('id')
+                .eq('usuario_id', userProfile.id)
+                .eq('temporada_id', id)
+                .single();
+
             // Check for prova
             const { data: prova } = await supabaseClient
                 .from('provas')
@@ -349,7 +357,24 @@
                 .single();
 
             if (prova) {
-                document.getElementById('prova-link').href = `prova.html?id=${prova.id}`;
+                const provaLink = document.getElementById('prova-link');
+                const quizSection = document.getElementById('quiz-section');
+                const lockOverlay = document.getElementById('quiz-lock-overlay');
+
+                provaLink.href = `prova.html?id=${prova.id}`;
+
+                if (certificado) {
+                    // Season Completed
+                    quizSection.classList.remove('grayscale', 'opacity-70', 'cursor-not-allowed');
+                    quizSection.classList.add('unlocked', 'border-green-500', 'border-2');
+                    lockOverlay.classList.add('hidden'); // Completely hide lock
+
+                    document.querySelector('#quiz-section h2').textContent = 'Temporada Concluída!';
+                    document.querySelector('#quiz-section p').textContent = 'Você já conquistou seu certificado.';
+                    provaLink.textContent = 'VER RESULTADO / TENTAR NOVAMENTE';
+                    provaLink.classList.remove('from-aec-pink', 'to-purple-600');
+                    provaLink.classList.add('from-green-500', 'to-emerald-600');
+                }
             }
 
             renderPlaylist();
