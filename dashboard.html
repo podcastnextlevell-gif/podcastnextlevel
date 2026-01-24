@@ -356,7 +356,25 @@
                 .from('usuarios')
                 .select('id, pontuacao_total')
                 .eq('status', 'aprovado')
+                .eq('is_admin', false)
                 .order('pontuacao_total', { ascending: false });
+
+            // Buscar pontuação atualizada do usuário
+            let myPoints = userProfile.pontuacao_total || 0;
+            const { data: myData } = await supabaseClient
+                .from('usuarios')
+                .select('pontuacao_total')
+                .eq('id', userProfile.id)
+                .single();
+
+            if (myData) {
+                myPoints = myData.pontuacao_total;
+                // Atualizar cache se necessário
+                userProfile.pontuacao_total = myPoints;
+                sessionStorage.setItem('userProfile', JSON.stringify(userProfile));
+            }
+
+            document.getElementById('stat-pontos').textContent = myPoints;
 
             if (rankings) {
                 const pos = rankings.findIndex(u => u.id === userProfile.id) + 1;

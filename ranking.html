@@ -201,6 +201,7 @@
                 .from('usuarios')
                 .select('id, nickname, pontuacao_total')
                 .eq('status', 'aprovado')
+                .eq('is_admin', false)
                 .order('pontuacao_total', { ascending: false })
                 .limit(10);
 
@@ -237,6 +238,7 @@
                     .from('usuarios')
                     .select('id, nickname, pontuacao_total')
                     .eq('status', 'aprovado')
+                    .eq('is_admin', false)
                     .order('pontuacao_total', { ascending: false });
 
                 if (allUsers) {
