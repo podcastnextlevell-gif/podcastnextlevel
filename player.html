@@ -491,6 +491,31 @@
                 </div>
 
                 <h1 class="text-3xl font-bold mb-4">${ep.titulo}</h1>
+
+                ${ep.video_url ? (() => {
+                    let videoHtml = '';
+                    if (ep.video_url.includes('youtube.com') || ep.video_url.includes('youtu.be')) {
+                        const videoId = ep.video_url.split('v=')[1] || ep.video_url.split('/').pop();
+                        videoHtml = `
+                            <div class="w-full aspect-video rounded-2xl shadow-2xl mb-8 border border-slate-700 overflow-hidden relative">
+                                <iframe src="https://www.youtube.com/embed/${videoId.split('&')[0]}?modestbranding=1&rel=0&showinfo=0" class="absolute top-0 left-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>`;
+                    } else if (ep.video_url.includes('vimeo')) {
+                        const videoId = ep.video_url.split('/').pop();
+                        videoHtml = `
+                            <div class="w-full aspect-video rounded-2xl shadow-2xl mb-8 border border-slate-700 overflow-hidden relative">
+                                <iframe src="https://player.vimeo.com/video/${videoId}" class="absolute top-0 left-0 w-full h-full" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                            </div>`;
+                    } else {
+                        videoHtml = `
+                             <div class="w-full aspect-video rounded-2xl shadow-2xl mb-8 border border-slate-700 overflow-hidden relative bg-slate-900 flex flex-col items-center justify-center">
+                                <span class="material-symbols-outlined text-4xl text-slate-500 mb-2">video_library</span>
+                                <a href="${ep.video_url}" target="_blank" class="text-aec-pink underline font-medium">Assistir Vídeo Externo</a>
+                            </div>`;
+                    }
+                    return videoHtml;
+                })() : ''}
+
                 <div class="prose prose-invert max-w-none">
                     <p class="text-slate-300 leading-relaxed whitespace-pre-wrap">${ep.descricao || 'Sem descrição disponível.'}</p>
                 </div>

@@ -200,135 +200,150 @@
                         placeholder="Conteúdo do episódio..."></textarea>
                 </div>
 
-                <!-- Upload de Áudio -->
-                <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Arquivo de Áudio (.mp3)</label>
-
-                    <!-- Input File -->
-                    <div class="flex gap-2 mb-2">
-                        <label class="flex-1 cursor-pointer">
-                            <span
-                                class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl py-8 text-slate-400 transition-all group">
-                                <span class="material-symbols-outlined group-hover:text-white">cloud_upload</span>
-                                <span class="group-hover:text-white" id="audio-filename">Clique para selecionar o
-                                    áudio</span>
-                            </span>
-                            <input type="file" id="audio-file" accept="audio/*" class="hidden"
-                                onchange="handleFileSelect(this, 'audio')">
-                        </label>
+                <!-- Campo de Vídeo Novo -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                        Link do Vídeo <span class="text-xs text-slate-500">(Opcional)</span>
+                    </label>
+                    <div class="relative">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">videocam</span>
+                        <input type="url" id="video_url"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-500"
+                            placeholder="https://www.youtube.com/embed/...">
                     </div>
-
-                    <!-- Progress Bar -->
-                    <div id="audio-progress" class="hidden w-full bg-slate-800 rounded-full h-2 mb-2">
-                        <div class="bg-aec-pink h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-
-                    <!-- Hidden URL Input -->
-                    <input type="url" id="audio_url"
-                        class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-500"
-                        placeholder="URL do arquivo (gerada automaticamente)" readonly>
+                    <p class="text-xs text-slate-500 mt-1">Cole a URL de embed (YouTube/Vimeo) ou vídeo direto.</p>
                 </div>
-
-                <!-- Upload de Imagem -->
-                <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Capa do Episódio</label>
-
-                    <div class="flex gap-4">
-                        <!-- Preview -->
-                        <div class="w-24 h-24 bg-slate-800 rounded-lg overflow-hidden shrink-0 border border-slate-700">
-                            <img id="image-preview" src="" class="w-full h-full object-cover hidden">
-                            <div id="image-placeholder"
-                                class="w-full h-full flex items-center justify-center text-slate-600">
-                                <span class="material-symbols-outlined text-3xl">image</span>
+                <!-- Uploads Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Audio Upload -->
+                    <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Arquivo de Áudio (.mp3)</label>
+                        <div class="flex gap-2 mb-2">
+                            <label class="flex-1 cursor-pointer">
+                                <span
+                                    class="flex flex-col items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl py-4 text-slate-400 transition-all group h-24">
+                                    <span class="material-symbols-outlined group-hover:text-white">cloud_upload</span>
+                                    <span
+                                        class="text-xs text-center group-hover:text-white px-2 overflow-hidden text-ellipsis w-full"
+                                        id="audio-filename">Selecionar Áudio</span>
+                                </span>
+                                <input type="file" id="audio-file" accept="audio/*" class="hidden"
+                                    onchange="handleFileSelect(this, 'audio')">
+                            </label>
+                        </div>
+                        <input type="url" id="audio_url"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 px-3 text-[10px] text-slate-500"
+                            placeholder="URL gerada auto" readonly>
+                        <!-- Progress Bar Restaurado -->
+                        <div id="audio-progress" class="hidden w-full bg-slate-800 rounded-full h-1 mt-2">
+                            <div class="bg-aec-pink h-1 rounded-full transition-all duration-300" style="width: 0%">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="flex-1">
-                            <!-- Input File -->
-                            <label class="block cursor-pointer mb-2">
+                    <!-- Image Upload -->
+                    <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Capa do Episódio</label>
+                        <div class="flex gap-2 mb-2">
+                            <div
+                                class="w-24 h-24 bg-slate-800 rounded-lg overflow-hidden shrink-0 border border-slate-700 relative">
+                                <div id="image-preview" class="absolute inset-0 bg-cover bg-center hidden"></div>
+                                <div id="image-placeholder"
+                                    class="absolute inset-0 flex items-center justify-center text-slate-600">
+                                    <span class="material-symbols-outlined text-3xl">image</span>
+                                </div>
+                            </div>
+                            <label class="flex-1 cursor-pointer">
                                 <span
-                                    class="block w-full text-center bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-lg py-2 text-sm text-slate-400 transition-all">
-                                    Selecionar Imagem
+                                    class="flex flex-col items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl py-4 text-slate-400 transition-all group h-24">
+                                    <span class="material-symbols-outlined group-hover:text-white">image</span>
+                                    <span class="text-xs text-center group-hover:text-white"
+                                        id="image-filename">Selecionar Capa</span>
                                 </span>
                                 <input type="file" id="image-file" accept="image/*" class="hidden"
                                     onchange="handleFileSelect(this, 'image')">
                             </label>
-
-                            <!-- Progress & Status -->
-                            <div id="image-progress" class="hidden w-full bg-slate-800 rounded-full h-1.5 mb-2">
-                                <div class="bg-aec-pink h-1.5 rounded-full transition-all duration-300"
-                                    style="width: 0%"></div>
+                        </div>
+                        <input type="url" id="imagem_url"
+                            class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 px-3 text-[10px] text-slate-500"
+                            placeholder="URL gerada auto" readonly>
+                        <!-- Progress Bar Restaurado -->
+                        <div id="image-progress" class="hidden w-full bg-slate-800 rounded-full h-1 mt-2">
+                            <div class="bg-aec-pink h-1 rounded-full transition-all duration-300" style="width: 0%">
                             </div>
-
-                            <!-- Hidden URL Input -->
-                            <input type="url" id="imagem_url"
-                                class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 px-3 text-[10px] text-slate-500"
-                                placeholder="URL da imagem" readonly>
                         </div>
                     </div>
                 </div>
 
-                <!-- Upload de Material de Apoio -->
-                <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Material de Apoio (PDF, ZIP,
-                        etc.)</label>
+                <!-- Material e Configurações -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Material -->
+                    <!-- Material -->
+                    <div class="glass-panel p-4 rounded-xl border border-slate-700/50">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Material de Apoio (PDF/ZIP)</label>
 
-                    <div class="flex gap-2">
-                        <label class="flex-1 cursor-pointer">
-                            <span
-                                class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl py-4 text-slate-400 transition-all group">
-                                <span class="material-symbols-outlined group-hover:text-white">folder_zip</span>
-                                <span class="group-hover:text-white text-xs" id="material-filename">Clique para
-                                    selecionar arquivo</span>
-                            </span>
-                            <input type="file" id="material-file" class="hidden"
-                                onchange="handleFileSelect(this, 'material')">
-                        </label>
+                        <!-- Upload Material -->
+                        <div class="flex gap-2 mb-2">
+                            <label class="flex-1 cursor-pointer">
+                                <span
+                                    class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 border-dashed rounded-xl py-3 text-slate-400 transition-all group">
+                                    <span class="material-symbols-outlined group-hover:text-white">folder_zip</span>
+                                    <span class="text-xs group-hover:text-white truncate max-w-[150px]"
+                                        id="material-filename">Selecionar Arquivo</span>
+                                </span>
+                                <input type="file" id="material-file" class="hidden"
+                                    onchange="handleFileSelect(this, 'material')">
+                            </label>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div id="material-progress" class="hidden w-full bg-slate-800 rounded-full h-1.5 mb-2">
+                            <div class="bg-aec-pink h-1.5 rounded-full transition-all duration-300" style="width: 0%">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <input type="text" id="material_nome"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 px-3 text-white text-xs"
+                                placeholder="Nome (Ex: Apostila PDF)">
+                            <input type="url" id="material_url"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 px-3 text-white text-xs"
+                                placeholder="URL do arquivo" readonly>
+                        </div>
                     </div>
 
-                    <!-- Progress Bar -->
-                    <div id="material-progress" class="hidden w-full bg-slate-800 rounded-full h-1.5 mb-2 mt-2">
-                        <div class="bg-aec-pink h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2 mt-2">
-                        <input type="url" id="material_url"
-                            class="bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-xs text-slate-500"
-                            placeholder="URL do arquivo" readonly>
-                        <input type="text" id="material_nome"
-                            class="bg-slate-900/50 border border-slate-700 rounded-lg py-2 px-3 text-xs text-white"
-                            placeholder="Nome do arquivo (ex: Slides da Aula)">
+                    <!-- Configs -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Duração (seg)</label>
+                            <input type="number" id="duracao_segundos"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-2 px-3 text-white text-center">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Ordem</label>
+                            <input type="number" id="ordem"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-2 px-3 text-white text-center">
+                        </div>
+                        <!-- Status Restaurado -->
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                            <select id="status"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-2 px-3 text-white text-sm">
+                                <option value="publicado">✅ Publicado</option>
+                                <option value="rascunho">📝 Rascunho</option>
+                                <option value="previa">👁️ Prévia</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Duração (segundos)</label>
-                        <input type="number" id="duracao_segundos" min="0"
-                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white"
-                            placeholder="300">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
-                        <select id="status"
-                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
-                            <option value="rascunho">Rascunho</option>
-                            <option value="previa">Prévia</option>
-                            <option value="publicado">Publicado</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Ordem</label>
-                        <input type="number" id="ordem" value="0" min="0"
-                            class="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 px-4 text-white">
-                    </div>
-                </div>
-
-                <div class="flex gap-4 pt-4">
+                <div class="pt-4 border-t border-slate-700 flex justify-end gap-3">
                     <button type="button" onclick="closeModal()"
-                        class="flex-1 bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-medium transition-all">Cancelar</button>
+                        class="px-4 py-2 text-slate-300 hover:text-white transition-colors">Cancelar</button>
                     <button type="submit"
-                        class="flex-1 bg-aec-pink hover:bg-aec-pinkDark py-3 rounded-xl font-medium transition-all">Salvar</button>
+                        class="px-6 py-2 bg-gradient-to-r from-aec-pink to-purple-600 rounded-xl text-white font-bold hover:shadow-lg hover:shadow-pink-500/20 transition-all">Salvar
+                        Episódio</button>
                 </div>
             </form>
         </div>
@@ -436,11 +451,11 @@
                     </div>
                     
                     <div class="flex gap-2 shrink-0">
-                        <button onclick="editEpisodio('${ep.id}')" class="p-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-white">
-                            <span class="material-symbols-outlined text-sm">edit</span>
+                        <button onclick="editEpisodio('${ep.id}')" class="p-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-white group">
+                            <span class="material-symbols-outlined text-sm pointer-events-none group-hover:text-white">edit</span>
                         </button>
-                        <button onclick="deleteEpisodio('${ep.id}')" class="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30">
-                            <span class="material-symbols-outlined text-sm">delete</span>
+                        <button onclick="deleteEpisodio('${ep.id}')" class="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 group">
+                            <span class="material-symbols-outlined text-sm pointer-events-none group-hover:text-red-300">delete</span>
                         </button>
                     </div>
                 </div>
@@ -456,14 +471,28 @@
             // Update UI immediately
             if (type === 'audio') {
                 document.getElementById('audio-filename').textContent = file.name;
+
+                // Calculate duration
+                const audioObj = new Audio(URL.createObjectURL(file));
+                audioObj.addEventListener('loadedmetadata', () => {
+                    const duration = Math.round(audioObj.duration);
+                    document.getElementById('duracao_segundos').value = duration;
+                    // Opcional: mostrar duração formatada em algum lugar se desejar
+                });
+
             } else if (type === 'image') {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    document.getElementById('image-preview').src = e.target.result;
-                    document.getElementById('image-preview').classList.remove('hidden');
-                    document.getElementById('image-placeholder').classList.add('hidden');
+                    const preview = document.getElementById('image-preview');
+                    if (preview) {
+                        preview.style.backgroundImage = `url('${e.target.result}')`;
+                        preview.classList.remove('hidden');
+                        const placeholder = document.getElementById('image-placeholder');
+                        if (placeholder) placeholder.classList.add('hidden');
+                    }
                 };
                 reader.readAsDataURL(file);
+                document.getElementById('image-filename').textContent = file.name;
             } else if (type === 'material') {
                 document.getElementById('material-filename').textContent = file.name;
                 // Auto-fill name if empty
@@ -502,6 +531,7 @@
             document.getElementById('descricao').value = episodio?.descricao || '';
             document.getElementById('audio_url').value = episodio?.audio_url || '';
             document.getElementById('imagem_url').value = episodio?.imagem_url || '';
+            document.getElementById('video_url').value = episodio?.video_url || '';
             document.getElementById('material_url').value = episodio?.material_apoio_url || '';
             document.getElementById('material_nome').value = episodio?.material_apoio_nome || '';
             document.getElementById('duracao_segundos').value = episodio?.duracao_segundos || '';
@@ -510,13 +540,10 @@
 
             // Reset Upload UI
             document.getElementById('audio-file').value = '';
-            document.getElementById('audio-filename').textContent = episodio?.audio_url ? 'Áudio já cadastrado (envie novo para alterar)' : 'Clique para selecionar o áudio';
+            document.getElementById('audio-filename').textContent = episodio?.audio_url ? 'Áudio Atual: ' + episodio.audio_url.split('/').pop().substring(0, 20) + '...' : 'Selecionar Áudio';
 
             document.getElementById('image-file').value = '';
             if (episodio?.imagem_url) {
-                document.getElementById('image-preview').src = episodio.imagem_url;
-                document.getElementById('image-preview').classList.remove('hidden');
-                document.getElementById('image-placeholder').classList.add('hidden');
             } else {
                 document.getElementById('image-preview').classList.add('hidden');
                 document.getElementById('image-placeholder').classList.remove('hidden');
@@ -565,6 +592,7 @@
 
                 let audioUrl = document.getElementById('audio_url').value;
                 let imageUrl = document.getElementById('imagem_url').value;
+                let videoUrl = document.getElementById('video_url').value; // Novo
                 let materialUrl = document.getElementById('material_url').value;
 
                 if (audioFile) {
@@ -603,6 +631,7 @@
                     descricao: document.getElementById('descricao').value,
                     audio_url: audioUrl || null,
                     imagem_url: imageUrl || null,
+                    video_url: videoUrl || null, // ADICIONADO: Persistência do Vídeo
                     material_apoio_url: materialUrl || null,
                     material_apoio_nome: document.getElementById('material_nome').value || null,
                     duracao_segundos: parseInt(document.getElementById('duracao_segundos').value) || 0,

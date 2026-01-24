@@ -566,7 +566,9 @@
                 duration: 65,
                 template: 'tpl-ep00a',
                 // CAPA 2: ANALISTA
-                art: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop'
+                art: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop',
+                // VÍDEO DE TESTE (AULA SQL BÁSICA)
+                video_url: 'https://www.youtube.com/watch?v=HXV3zeQKqGY'
             },
             {
                 id: 'ep00b',
@@ -749,7 +751,57 @@
             void display.offsetWidth;
             display.innerHTML = '';
             if (template) {
-                display.appendChild(template.content.cloneNode(true));
+                // 1. Clonar Template
+                const content = template.content.cloneNode(true);
+
+                // 2. Verificar/Injetar Vídeo
+                if (track.video_url) {
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = "w-full aspect-video rounded-3xl shadow-2xl mt-8 mb-8 border-2 border-slate-700 overflow-hidden relative group";
+
+                    if (track.video_url.includes('youtube.com') || track.video_url.includes('youtu.be')) {
+                        // YouTube Embed
+                        const videoId = track.video_url.split('v=')[1] || track.video_url.split('/').pop();
+                        videoContainer.innerHTML = `
+                            <iframe 
+                                src="https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0" 
+                                class="absolute top-0 left-0 w-full h-full"
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>`;
+                    } else if (track.video_url.includes('vimeo')) {
+                        // Vimeo Embed
+                        const videoId = track.video_url.split('/').pop();
+                        videoContainer.innerHTML = `
+                            <iframe 
+                                src="https://player.vimeo.com/video/${videoId}" 
+                                class="absolute top-0 left-0 w-full h-full"
+                                frameborder="0" 
+                                allow="autoplay; fullscreen; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>`;
+                    } else {
+                        // Link Genérico ou HTML5 Video (Fallback)
+                        videoContainer.innerHTML = `
+                            <div class="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-slate-500">
+                                <span class="material-symbols-outlined text-4xl mb-2">video_library</span>
+                                <a href="${track.video_url}" target="_blank" class="text-aec-pink underline">Assistir Vídeo Externo</a>
+                            </div>
+                        `;
+                    }
+
+                    // Inserir APÓS a descrição/título (assumindo que o template tem um div wrapper)
+                    // Como é template, vamos inserir no início do container principal do clone
+                    const mainDiv = content.querySelector('div.animate-fade-in');
+                    if (mainDiv) {
+                        mainDiv.appendChild(videoContainer);
+                    } else {
+                        content.appendChild(videoContainer);
+                    }
+                }
+
+                display.appendChild(content);
                 display.classList.add('animate-slide-up');
             }
 
