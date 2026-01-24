@@ -144,7 +144,7 @@
             </header>
 
             <!-- Stats Grid -->
-            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div class="glass-panel rounded-2xl p-5">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-slate-400 text-sm">Total de Usuários</span>
@@ -173,90 +173,132 @@
                     <p id="stat-episodios" class="text-xs text-slate-500 mt-1">- episódios publicados</p>
                 </div>
 
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-slate-400 text-sm">Certificados Emitidos</span>
-                    <span class="material-symbols-outlined text-purple-400">workspace_premium</span>
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-400 text-sm">Certificados Emitidos</span>
+                        <span class="material-symbols-outlined text-purple-400">workspace_premium</span>
+                    </div>
+                    <p id="stat-certificados" class="text-3xl font-bold">0</p>
+                    <p id="stat-media" class="text-xs text-slate-500 mt-1">Média: -</p>
                 </div>
-                <p id="stat-certificados" class="text-3xl font-bold">0</p>
-                <p id="stat-media" class="text-xs text-slate-500 mt-1">Média: -</p>
-    </div>
 
-    <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-slate-400 text-sm">Taxa de Satisfação</span>
-            <span class="material-symbols-outlined text-yellow-400">star</span>
-        </div>
-        <div class="flex items-end gap-3">
-            <p id="stat-satisfacao" class="text-3xl font-bold leading-none">-</p>
-            <span class="text-sm text-slate-500 mb-1">/ 5.0</span>
-        </div>
-        <p id="stat-total-avaliacoes" class="text-xs text-slate-500 mt-2 mb-3">0 avaliações</p>
+                <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-400 text-sm">Taxa de Satisfação</span>
+                        <span class="material-symbols-outlined text-yellow-400">star</span>
+                    </div>
+                    <div class="flex items-end gap-3">
+                        <p id="stat-satisfacao" class="text-3xl font-bold leading-none">-</p>
+                        <span class="text-sm text-slate-500 mb-1">/ 5.0</span>
+                    </div>
+                    <p id="stat-total-avaliacoes" class="text-xs text-slate-500 mt-2 mb-3">0 avaliações</p>
 
-        <!-- Mini Bar Chart for Stars -->
-        <div class="flex gap-1 h-8 items-end w-full" id="stars-chart">
-            <!-- Dynamically filled -->
-        </div>
-    </div>
-    </section>
-
-    <!-- Two Column Layout -->
-    <div class="grid lg:grid-cols-2 gap-6">
-        <!-- Usuários Pendentes -->
-        <section class="glass-panel rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="font-bold flex items-center gap-2">
-                    <span class="material-symbols-outlined text-yellow-400">pending</span>
-                    Aguardando Aprovação
-                </h2>
-                <a href="usuarios.html?status=pendente" class="text-xs text-aec-pink hover:underline">Ver
-                    todos</a>
-            </div>
-
-            <div id="pendentes-list" class="space-y-3">
-                <div class="text-center py-8 text-slate-500">
-                    <span class="material-symbols-outlined text-3xl mb-2">check_circle</span>
-                    <p class="text-sm">Nenhum usuário pendente</p>
+                    <!-- Mini Bar Chart for Stars -->
+                    <div class="flex gap-1 h-8 items-end w-full" id="stars-chart"></div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Top Ranking -->
-        <section class="glass-panel rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="font-bold flex items-center gap-2">
-                    <span class="material-symbols-outlined text-aec-pink">leaderboard</span>
-                    Top 5 Ranking
-                </h2>
-                <a href="../ranking.html" class="text-xs text-aec-pink hover:underline">Ver completo</a>
-            </div>
+                <!-- NPS Card -->
+                <div class="glass-panel rounded-2xl p-5 relative overflow-hidden border border-aec-pink/20">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-slate-300 text-sm font-semibold">NPS Score</span>
+                        <span class="material-symbols-outlined text-aec-pink">sentiment_satisfied</span>
+                    </div>
+                    <div class="flex items-end gap-3">
+                        <p id="stat-nps" class="text-3xl font-bold leading-none text-aec-pink">-</p>
+                        <span class="text-sm text-slate-500 mb-1">Score</span>
+                    </div>
+                    <p id="stat-nps-desc" class="text-xs text-slate-400 mt-2">Zona de Qualidade</p>
 
-            <div id="ranking-list" class="space-y-3">
-                <div class="text-center py-8 text-slate-500">
-                    <span class="material-symbols-outlined text-3xl mb-2">emoji_events</span>
-                    <p class="text-sm">Nenhum usuário ranqueado</p>
+                    <div class="mt-3 h-2 w-full bg-slate-800 rounded-full overflow-hidden flex">
+                        <div id="bar-promotores" class="h-full bg-green-500" style="width: 0%"></div>
+                        <div id="bar-neutros" class="h-full bg-yellow-500" style="width: 0%"></div>
+                        <div id="bar-detratores" class="h-full bg-red-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                        <span class="flex items-center gap-1">
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div> Detratores
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> Promotores
+                        </span>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </div>
+            </section>
 
-    <!-- Recent Activity -->
-    <section class="mt-6 glass-panel rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="font-bold flex items-center gap-2">
-                <span class="material-symbols-outlined text-blue-400">privacy_tip</span>
-                Auditoria do Sistema (Logs)
-            </h2>
-            <span class="text-xs text-slate-500">Últimos registros</span>
-        </div>
+            <!-- Two Column Layout -->
+            <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Usuários Pendentes -->
+                <section class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-yellow-400">pending</span>
+                            Aguardando Aprovação
+                        </h2>
+                        <a href="usuarios.html?status=pendente" class="text-xs text-aec-pink hover:underline">Ver
+                            todos</a>
+                    </div>
 
-        <div id="logs-list" class="space-y-0 text-sm">
-            <div class="text-center py-8 text-slate-500">
-                <span class="material-symbols-outlined text-3xl mb-2 animate-spin">sync</span>
-                <p>Carregando auditoria...</p>
+                    <div id="pendentes-list" class="space-y-3">
+                        <div class="text-center py-8 text-slate-500">
+                            <span class="material-symbols-outlined text-3xl mb-2">check_circle</span>
+                            <p class="text-sm">Nenhum usuário pendente</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Top Ranking -->
+                <section class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-aec-pink">leaderboard</span>
+                            Top 5 Ranking
+                        </h2>
+                        <a href="../ranking.html" class="text-xs text-aec-pink hover:underline">Ver completo</a>
+                    </div>
+
+                    <div id="ranking-list" class="space-y-3">
+                        <div class="text-center py-8 text-slate-500">
+                            <span class="material-symbols-outlined text-3xl mb-2">emoji_events</span>
+                            <p class="text-sm">Nenhum usuário ranqueado</p>
+                        </div>
+                    </div>
+                </section>
             </div>
-        </div>
-    </section>
-    </main>
+
+            <!-- Top Episódios -->
+            <section class="mt-6 glass-panel rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-400">trending_up</span>
+                        Episódios Mais Ouvidos
+                    </h2>
+                </div>
+                <div id="top-episodes-list" class="space-y-3">
+                    <div class="text-center py-8 text-slate-500">
+                        <span class="material-symbols-outlined text-3xl mb-2 animate-spin">sync</span>
+                        <p>Carregando episódios...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="mt-6 glass-panel rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-400">privacy_tip</span>
+                        Auditoria do Sistema (Logs)
+                    </h2>
+                    <span class="text-xs text-slate-500">Últimos registros</span>
+                </div>
+
+                <div id="logs-list" class="space-y-0 text-sm">
+                    <div class="text-center py-8 text-slate-500">
+                        <span class="material-symbols-outlined text-3xl mb-2 animate-spin">sync</span>
+                        <p>Carregando auditoria...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script src="../js/supabase-config.js"></script>
@@ -365,6 +407,44 @@
                     `;
                 });
 
+                // --- NPS Calculation ---
+                let promoters = 0;
+                let detractors = 0;
+                let neutrals = 0;
+
+                avaliacoes.forEach(a => {
+                    if (a.nota >= 5) promoters++;
+                    else if (a.nota >= 4) neutrals++;
+                    else detractors++;
+                });
+
+                const total = avaliacoes.length;
+                const percentPromoters = (promoters / total) * 100;
+                const percentDetractors = (detractors / total) * 100;
+                const percentNeutrals = (neutrals / total) * 100;
+
+                const nps = Math.round(percentPromoters - percentDetractors);
+
+                let npsDesc = 'Zona Crítica';
+                let npsColor = 'text-red-500';
+
+                if (nps >= 75) { npsDesc = 'Zona de Excelência'; npsColor = 'text-green-400'; }
+                else if (nps >= 50) { npsDesc = 'Zona de Qualidade'; npsColor = 'text-green-400'; }
+                else if (nps >= 0) { npsDesc = 'Zona de Aperfeiçoamento'; npsColor = 'text-yellow-400'; }
+
+                const npsEl = document.getElementById('stat-nps');
+                if (npsEl) {
+                    npsEl.textContent = nps;
+                    npsEl.className = `text-3xl font-bold leading-none ${npsColor}`;
+                    document.getElementById('stat-nps-desc').textContent = npsDesc;
+                    document.getElementById('stat-nps-desc').className = `text-xs mt-2 ${npsColor}`;
+
+                    // Update Bars
+                    document.getElementById('bar-promotores').style.width = `${percentPromoters}%`;
+                    document.getElementById('bar-neutros').style.width = `${percentNeutrals}%`;
+                    document.getElementById('bar-detratores').style.width = `${percentDetractors}%`;
+                }
+
             } else {
                 document.getElementById('stat-satisfacao').textContent = '-';
                 // Empty chart
@@ -378,6 +458,12 @@
 
             // Logs
             await loadLogs();
+
+            // Top Episodes
+            await loadTopEpisodes();
+
+            // Top Episodes
+            await loadTopEpisodes();
         }
 
         async function loadPendentes() {
@@ -579,6 +665,62 @@
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
+            }
+        }
+
+        async function loadTopEpisodes() {
+            const container = document.getElementById('top-episodes-list');
+            try {
+                // 1. Get Progress Count per Episode
+                const { data: progresso } = await supabaseClient
+                    .from('progresso_usuario')
+                    .select('episodio_id');
+
+                if (!progresso || progresso.length === 0) {
+                    container.innerHTML = `<p class="text-slate-500 text-sm text-center py-4">Sem dados de audiência ainda.</p>`;
+                    return;
+                }
+
+                // Count occurrences
+                const counts = {};
+                progresso.forEach(p => counts[p.episodio_id] = (counts[p.episodio_id] || 0) + 1);
+
+                // 2. Fetch Episode Titles (Only filtered)
+                const uniqueIds = Object.keys(counts);
+                if (uniqueIds.length === 0) return;
+
+                const { data: episodios } = await supabaseClient
+                    .from('episodios')
+                    .select('id, titulo, temporada_id')
+                    .in('id', uniqueIds);
+
+                if (!episodios) return;
+
+                // Merge and Sort
+                const ranked = episodios.map(ep => ({
+                    ...ep,
+                    views: counts[ep.id] || 0
+                })).sort((a, b) => b.views - a.views).slice(0, 5);
+
+                container.innerHTML = ranked.map((ep, i) => `
+                    <div class="flex items-center justify-between p-3 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:border-aec-pink/30 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg font-bold text-slate-500 w-6">#${i + 1}</span>
+                            <div>
+                                <p class="text-sm font-medium line-clamp-1 text-slate-200">${ep.titulo}</p>
+                                <p class="text-[10px] text-slate-500">Temporada ${ep.temporada_id}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 text-green-400 bg-green-400/10 px-2 py-1 rounded-lg">
+                            <span class="text-sm font-bold">${ep.views}</span>
+                            <span class="material-symbols-outlined text-xs">headphones</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('Erro ao carregar top episodios:', err);
+                container.innerHTML = `<p class="text-red-400 text-xs text-center">Erro ao carregar dados.</p>`;
             }
         }
 
