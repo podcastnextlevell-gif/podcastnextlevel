@@ -265,6 +265,7 @@
         let currentTrackIndex = 0;
         let isPlaying = false;
         let completedTracks = new Set();
+        let prova = null;
 
         const audio = document.getElementById('audio-player');
 
@@ -349,12 +350,14 @@
                 .single();
 
             // Check for prova
-            const { data: prova } = await supabaseClient
+            const { data: p } = await supabaseClient
                 .from('provas')
                 .select('id')
                 .eq('temporada_id', id)
                 .eq('ativa', true)
                 .single();
+
+            prova = p;
 
             if (prova) {
                 const provaLink = document.getElementById('prova-link');
@@ -398,6 +401,9 @@
 
             episodios.forEach((ep, index) => {
                 const isLocked = isTrackLocked(index);
+
+                // Unlock quiz check
+                checkQuizLock();
                 const isCompleted = completedTracks.has(ep.id);
                 const isActive = index === currentTrackIndex;
 
@@ -600,6 +606,25 @@
             const m = Math.floor(s / 60);
             const sec = Math.floor(s % 60);
             return `${m}:${sec < 10 ? '0' + sec : sec}`;
+        }
+
+        function checkQuizLock() {
+            if (!prova) return;
+            const quizSection = document.getElementById('quiz-section');
+            const lockOverlay = document.getElementById('quiz-lock-overlay');
+
+            // Check if certificate already exists (handled in init)
+            if (quizSection.classList.contains('unlocked')) return;
+
+            // Check if all episodes are completed
+            if (episodios.length > 0 && episodios.every(ep => completedTracks.has(ep.id))) {
+                quizSection.classList.remove('grayscale', 'opacity-70', 'cursor-not-allowed');
+                lockOverlay.classList.add('hidden');
+            } else {
+                // Ensure locked if not complete (and not certificated)
+                quizSection.classList.add('grayscale', 'opacity-70', 'cursor-not-allowed');
+                lockOverlay.classList.remove('hidden');
+            }
         }
 
         let simTimer;
