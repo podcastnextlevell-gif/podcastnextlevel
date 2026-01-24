@@ -342,14 +342,16 @@
         }
 
         async function loadEstatisticas() {
-            // Contar episódios completos
+            // Contar episódios completos (únicos)
             const { data: progresso } = await supabaseClient
                 .from('progresso_usuario')
-                .select('id')
+                .select('episodio_id')
                 .eq('usuario_id', userProfile.id)
                 .eq('completado', true);
 
-            document.getElementById('stat-episodios').textContent = progresso?.length || 0;
+            // Usar Set para garantir contagem de episódios únicos
+            const episodiosUnicos = new Set(progresso?.map(p => p.episodio_id) || []);
+            document.getElementById('stat-episodios').textContent = episodiosUnicos.size;
 
             // Buscar posição no ranking
             const { data: rankings } = await supabaseClient

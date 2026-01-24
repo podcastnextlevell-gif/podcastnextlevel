@@ -350,6 +350,20 @@
             const respostas = {};
             let acertos = 0;
 
+            // Security check: Verify if already approved
+            const { data: existingAttempts } = await supabaseClient
+                .from('tentativas_prova')
+                .select('aprovado')
+                .eq('usuario_id', userProfile.id)
+                .eq('prova_id', prova.id)
+                .eq('aprovado', true);
+
+            if (existingAttempts && existingAttempts.length > 0) {
+                alert('Você já foi aprovado nesta prova!');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
             for (const q of questoes) {
                 const resposta = formData.get(`q-${q.id}`);
                 respostas[q.id] = resposta;
