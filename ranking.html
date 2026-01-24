@@ -196,11 +196,13 @@
         }
 
         async function loadRanking() {
+            // Get top 10 for display
             const { data: ranking, error } = await supabaseClient
                 .from('usuarios')
                 .select('id, nickname, pontuacao_total')
                 .eq('status', 'aprovado')
-                .order('pontuacao_total', { ascending: false });
+                .order('pontuacao_total', { ascending: false })
+                .limit(10);
 
             if (error || !ranking?.length) {
                 document.getElementById('ranking-list').innerHTML = `
@@ -229,14 +231,22 @@
                 document.querySelector('#third p:last-of-type').textContent = `${third.pontuacao_total} pts`;
             }
 
-            // Show my position
+            // Show my position - fetch all users to find correct position
             if (currentUserId) {
-                const myIndex = ranking.findIndex(u => u.id === currentUserId);
-                if (myIndex >= 0) {
-                    document.getElementById('my-position').classList.remove('hidden');
-                    document.getElementById('my-rank').textContent = `#${myIndex + 1}`;
-                    document.getElementById('my-name').textContent = ranking[myIndex].nickname;
-                    document.getElementById('my-points').textContent = ranking[myIndex].pontuacao_total;
+                const { data: allUsers } = await supabaseClient
+                    .from('usuarios')
+                    .select('id, nickname, pontuacao_total')
+                    .eq('status', 'aprovado')
+                    .order('pontuacao_total', { ascending: false });
+
+                if (allUsers) {
+                    const myIndex = allUsers.findIndex(u => u.id === currentUserId);
+                    if (myIndex >= 0) {
+                        document.getElementById('my-position').classList.remove('hidden');
+                        document.getElementById('my-rank').textContent = `#${myIndex + 1}`;
+                        document.getElementById('my-name').textContent = allUsers[myIndex].nickname;
+                        document.getElementById('my-points').textContent = allUsers[myIndex].pontuacao_total;
+                    }
                 }
             }
 
