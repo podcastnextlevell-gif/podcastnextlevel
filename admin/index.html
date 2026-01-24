@@ -131,9 +131,16 @@
 
         <!-- Main Content -->
         <main class="ml-64 flex-1 p-8 min-h-screen">
-            <header class="mb-8">
-                <h1 class="text-3xl font-bold">Dashboard</h1>
-                <p class="text-slate-400">Visão geral da plataforma</p>
+            <header class="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold">Dashboard</h1>
+                    <p class="text-slate-400">Visão geral da plataforma</p>
+                </div>
+                <button onclick="exportCSV()"
+                    class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 border border-slate-700 transition-all">
+                    <span class="material-symbols-outlined">download</span>
+                    Exportar Base
+                </button>
             </header>
 
             <!-- Stats Grid -->
@@ -174,15 +181,21 @@
                 <p id="stat-media" class="text-xs text-slate-500 mt-1">Média: -</p>
     </div>
 
-    <div class="glass-panel rounded-2xl p-5">
+    <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
         <div class="flex items-center justify-between mb-3">
             <span class="text-slate-400 text-sm">Taxa de Satisfação</span>
             <span class="material-symbols-outlined text-yellow-400">star</span>
         </div>
-        <p id="stat-satisfacao" class="text-3xl font-bold flex items-center gap-2">
-            - <span class="text-lg text-slate-500 font-normal">/ 5.0</span>
-        </p>
-        <p id="stat-total-avaliacoes" class="text-xs text-slate-500 mt-1">0 avaliações</p>
+        <div class="flex items-end gap-3">
+            <p id="stat-satisfacao" class="text-3xl font-bold leading-none">-</p>
+            <span class="text-sm text-slate-500 mb-1">/ 5.0</span>
+        </div>
+        <p id="stat-total-avaliacoes" class="text-xs text-slate-500 mt-2 mb-3">0 avaliações</p>
+
+        <!-- Mini Bar Chart for Stars -->
+        <div class="flex gap-1 h-8 items-end w-full" id="stars-chart">
+            <!-- Dynamically filled -->
+        </div>
     </div>
     </section>
 
@@ -228,15 +241,18 @@
 
     <!-- Recent Activity -->
     <section class="mt-6 glass-panel rounded-2xl p-6">
-        <h2 class="font-bold flex items-center gap-2 mb-4">
-            <span class="material-symbols-outlined text-blue-400">history</span>
-            Atividade Recente
-        </h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-400">privacy_tip</span>
+                Auditoria do Sistema (Logs)
+            </h2>
+            <span class="text-xs text-slate-500">Últimos registros</span>
+        </div>
 
-        <div id="activity-list" class="space-y-3">
+        <div id="logs-list" class="space-y-0 text-sm">
             <div class="text-center py-8 text-slate-500">
-                <span class="material-symbols-outlined text-3xl mb-2">schedule</span>
-                <p class="text-sm">Nenhuma atividade recente</p>
+                <span class="material-symbols-outlined text-3xl mb-2 animate-spin">sync</span>
+                <p>Carregando auditoria...</p>
             </div>
         </div>
     </section>
@@ -321,11 +337,37 @@
                 const totalNota = avaliacoes.reduce((sum, a) => sum + a.nota, 0);
                 const mediaSatisfacao = (totalNota / avaliacoes.length).toFixed(1);
 
-                document.getElementById('stat-satisfacao').innerHTML = `${mediaSatisfacao} <span class="text-lg text-slate-500 font-normal">/ 5.0</span>`;
+                document.getElementById('stat-satisfacao').textContent = mediaSatisfacao;
                 document.getElementById('stat-total-avaliacoes').textContent = `${avaliacoes.length} avaliações`;
+
+                // Chart distribution
+                const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                avaliacoes.forEach(a => distribution[a.nota]++);
+                const max = Math.max(...Object.values(distribution));
+
+                const chart = document.getElementById('stars-chart');
+                chart.innerHTML = '';
+                [1, 2, 3, 4, 5].forEach(star => {
+                    const count = distribution[star];
+                    const h = max > 0 ? (count / max) * 100 : 0;
+                    const color = star >= 4 ? 'bg-green-400' : (star >= 3 ? 'bg-yellow-400' : 'bg-red-400');
+                    chart.innerHTML += `
+                        <div class="flex-1 flex flex-col items-center gap-1 group relative">
+                            <div class="w-full bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden">
+                                <div class="${color} w-full transition-all duration-500 opacity-60 group-hover:opacity-100" style="height: ${h}%"></div>
+                            </div>
+                            <span class="text-[8px] text-slate-500">${star}★</span>
+                            <!-- Tooltip -->
+                            <div class="absolute bottom-full mb-1 bg-black text-xs px-2 py-1 rounded hidden group-hover:block z-10 whitespace-nowrap">
+                                ${count} votos
+                            </div>
+                        </div>
+                    `;
+                });
+
             } else {
-                document.getElementById('stat-satisfacao').innerHTML = `N/A <span class="text-lg text-slate-500 font-normal"></span>`;
-                document.getElementById('stat-total-avaliacoes').textContent = `0 avaliações`;
+                document.getElementById('stat-satisfacao').textContent = '-';
+                // Empty chart
             }
 
             // Usuários pendentes
@@ -334,8 +376,8 @@
             // Ranking
             await loadRanking();
 
-            // Atividade recente
-            await loadActivity();
+            // Logs
+            await loadLogs();
         }
 
         async function loadPendentes() {
@@ -440,33 +482,103 @@
             });
         }
 
-        async function loadActivity() {
-            const container = document.getElementById('activity-list');
+        async function loadLogs() {
+            const container = document.getElementById('logs-list');
+            try {
+                // Tenta carregar da tabela audit_logs (se existir)
+                const { data: logs, error } = await supabaseClient
+                    .from('audit_logs')
+                    .select('*, usuarios(email)')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
 
-            // Buscar tentativas recentes
-            const { data: tentativas } = await supabaseClient
-                .from('tentativas_prova')
-                .select('*, usuarios(nickname), provas(titulo)')
-                .order('created_at', { ascending: false })
-                .limit(5);
+                if (error) throw error;
 
-            if (!tentativas?.length) return;
+                if (!logs?.length) {
+                    container.innerHTML = `<p class="text-center text-slate-500 py-4">Nenhum registro de auditoria.</p>`;
+                    return;
+                }
 
-            container.innerHTML = '';
+                container.innerHTML = logs.map(log => {
+                    const email = log.usuarios?.email || 'Sistema';
+                    const time = new Date(log.created_at).toLocaleString('pt-BR');
+                    return `
+                        <div class="flex items-start gap-3 py-3 border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30 px-2 rounded cursor-default border-l-2 border-l-transparent hover:border-l-aec-pink transition-all">
+                            <span class="material-symbols-outlined text-slate-500 text-lg mt-0.5">terminal</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-slate-200">
+                                    <span class="text-aec-pink">${log.action}</span> 
+                                    <span class="text-slate-500 mx-1">•</span> 
+                                    ${email}
+                                </p>
+                                <p class="text-xs text-slate-500 font-mono mt-0.5 truncate">${JSON.stringify(log.details)}</p>
+                            </div>
+                            <span class="text-[10px] text-slate-600 whitespace-nowrap">${time}</span>
+                        </div>
+                    `;
+                }).join('');
 
-            for (const t of tentativas) {
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-4 p-3 bg-slate-800/30 rounded-xl';
-                div.innerHTML = `
-                    <div class="w-10 h-10 ${t.aprovado ? 'bg-green-500/20' : 'bg-red-500/20'} rounded-full flex items-center justify-center">
-                        <span class="material-symbols-outlined ${t.aprovado ? 'text-green-400' : 'text-red-400'}">${t.aprovado ? 'check' : 'close'}</span>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm"><strong>${t.usuarios?.nickname || 'Usuário'}</strong> ${t.aprovado ? 'completou' : 'tentou'} a prova "<em>${t.provas?.titulo || 'Prova'}</em>"</p>
-                        <p class="text-xs text-slate-500">${formatDateTime(t.created_at)} • Nota: ${t.nota}</p>
+            } catch (err) {
+                console.warn('Tabela audit_logs não encontrada ou erro:', err);
+                container.innerHTML = `
+                    <div class="text-center py-4 text-slate-500">
+                        <p class="text-sm mb-2 text-yellow-500">⚠️ Tabela de logs não encontrada</p>
+                        <p class="text-xs">Execute o script SQL <code>admin_logs.sql</code> para ativar.</p>
                     </div>
                 `;
-                container.appendChild(div);
+            }
+        }
+
+        async function exportCSV() {
+            const btn = document.querySelector('button[onclick="exportCSV()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Gerando...`;
+            btn.disabled = true;
+
+            try {
+                // 1. Fetch Users
+                const { data: users } = await supabaseClient
+                    .from('usuarios')
+                    .select('*');
+
+                if (!users) throw new Error('Sem dados');
+
+                // 2. Build CSV Content
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "ID,Nome,Email,Matricula,Status,Pontos,Criado Em\r\n";
+
+                users.forEach(u => {
+                    // Escape CSV fields
+                    const nome = (u.nome_completo || '').replace(/"/g, '""');
+                    const row = [
+                        u.id,
+                        `"${nome}"`,
+                        u.email,
+                        u.matricula || '',
+                        u.status,
+                        u.pontuacao_total,
+                        u.created_at
+                    ].join(",");
+                    csvContent += row + "\r\n";
+                });
+
+                // 3. Download
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `usuarios_nextlevel_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showToast('Arquivo gerado com sucesso!', 'success');
+
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao exportar dados.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 

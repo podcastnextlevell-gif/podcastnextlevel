@@ -341,6 +341,9 @@
                                 <button onclick="viewUser('${user.id}')" class="p-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-white" title="Ver detalhes">
                                     <span class="material-symbols-outlined text-sm">visibility</span>
                                 </button>
+                                <button onclick="resetUserProgress('${user.id}')" class="p-2 bg-slate-800 text-red-500 rounded-lg hover:bg-red-500/20 hover:text-red-400" title="Resetar Progresso (Debug)">
+                                    <span class="material-symbols-outlined text-sm">restart_alt</span>
+                                </button>
                                 ${user.status === 'pendente' ? `
                                     <button onclick="aprovar('${user.id}')" class="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30" title="Aprovar">
                                         <span class="material-symbols-outlined text-sm">check</span>
@@ -465,6 +468,22 @@
             const { error } = await supabaseClient.from('usuarios').update({ status: 'reprovado' }).eq('id', userId);
             if (error) { alert('Erro ao reprovar'); return; }
             showToast('Usuário reprovado', 'warning');
+            await loadUsers();
+        }
+
+        async function resetUserProgress(userId) {
+            if (!confirm('ATENÇÃO ADMIN: Tem certeza que deseja zerar TOTALMENTE o progresso deste usuário? Essa ação é irreversível.')) return;
+
+            // Chama a função RPC (Procedure) que criamos no SQL
+            const { error } = await supabaseClient.rpc('admin_reset_user', { target_user_id: userId });
+
+            if (error) {
+                console.error('Erro no reset:', error);
+                alert('Erro ao resetar. Verifique se o script admin_logs.sql foi executado no Supabase.');
+                return;
+            }
+
+            showToast('Progresso do usuário resetado!', 'success');
             await loadUsers();
         }
 
