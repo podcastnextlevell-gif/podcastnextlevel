@@ -266,6 +266,7 @@
         let isPlaying = false;
         let completedTracks = new Set();
         let prova = null;
+        let maxTimeReached = 0; // Controle de quanto do áudio já foi ouvido
 
         const audio = document.getElementById('audio-player');
 
@@ -466,6 +467,7 @@
 
             if (ep.audio_url) {
                 audio.src = ep.audio_url;
+                maxTimeReached = 0; // Reseta o controle ao carregar novo episódio
             }
 
             document.getElementById('track-title').textContent = ep.titulo;
@@ -610,6 +612,11 @@
             const cur = audio.currentTime;
             const pct = dur > 0 ? (cur / dur) * 100 : 0;
 
+            // Atualiza tempo máximo alcançado
+            if (cur > maxTimeReached) {
+                maxTimeReached = cur;
+            }
+
             document.getElementById('progress-bar').style.width = `${pct}%`;
             document.getElementById('current-time').textContent = formatDuration(cur);
             document.getElementById('duration').textContent = formatDuration(dur);
@@ -621,8 +628,16 @@
             const dur = audio.duration || episodios[currentTrackIndex]?.duracao_segundos || 0;
 
             if (dur > 0) {
-                audio.currentTime = (clickX / rect.width) * dur;
-                document.getElementById('progress-bar').style.width = `${(clickX / rect.width) * 100}%`;
+                const targetTime = (clickX / rect.width) * dur;
+
+                // 🔒 BLOQUEIO: Permite apenas voltar, NÃO permite avançar
+                if (targetTime <= maxTimeReached) {
+                    audio.currentTime = targetTime;
+                    document.getElementById('progress-bar').style.width = `${(clickX / rect.width) * 100}%`;
+                } else {
+                    // Mostra feedback visual de bloqueio
+                    showToast('⏭️ Você precisa ouvir o podcast completo sem pular!', 'warning');
+                }
             }
         }
 
@@ -674,6 +689,25 @@
                 }
             }, 100);
         }
+
+        // Inicializa eventos do player
+        audio.ontimeupdate = updateProgress;
+        audio.onended = handleTrackEnd;
+        audio.onloadedmetadata = () => {
+            updateProgress();
+            maxTimeReached = 0; // Garante reset ao carregar novo áudio
+        };
+
+        // Adiciona evento de seek com bloqueio
+        document.getElementById('progress-container').onclick = seek;
+
+        // 🔒 BLOQUEIO EXTRA: Impede avanço por teclado (setas)
+        audio.addEventListener('seeking', function () {
+            if (audio.currentTime > maxTimeReached) {
+                audio.currentTime = maxTimeReached;
+                showToast('⏭️ Você não pode avançar! Ouça o podcast completo.', 'warning');
+            }
+        });
 
         init();
     </script>
