@@ -303,7 +303,6 @@
             userProfile = await userService.getUserProfile(user.id);
             document.getElementById('user-nickname').textContent = userProfile.apelido || 'Usuário';
 
-            await loadBonusModules();
             await loadUserProgress();
             renderModules();
             updateStats();
@@ -444,10 +443,34 @@
         function startModule(nivel) {
             if (!currentModule) return;
 
-            // Por enquanto, mostrar que está em desenvolvimento
-            closeModal();
+            // Módulos implementados (T0 e T1)
+            const modulosImplementados = {
+                'EP00A_ROI': 'modulos-bonus/EP00A_calculadora_roi.html',
+                'EP00B_ROADMAP': 'modulos-bonus/EP00B_roadmap.html',
+                'EP01_JORNADA': 'modulos-bonus/EP01_jornada.html',
+                'EP02_VOC': 'modulos-bonus/EP02_sentimento.html',
+                'EP03_METRICAS': 'modulos-bonus/EP03_metricas.html',
+                'EP04_OMNI': 'modulos-bonus/EP04_handoff.html',
+                'EP05_EMOCAO': 'modulos-bonus/EP05_script.html',
+                'EP06_PREDITIVO': 'modulos-bonus/EP06_churn.html'
+            };
 
-            showDevelopmentModal(currentModule, nivel);
+            console.log('Módulo atual:', currentModule.codigo);
+            console.log('Módulos implementados:', modulosImplementados);
+            console.log('Tem implementação?', modulosImplementados[currentModule.codigo]);
+
+            if (modulosImplementados[currentModule.codigo]) {
+                // Redirecionar para módulo real
+                const url = modulosImplementados[currentModule.codigo];
+                console.log('Redirecionando para:', url);
+                closeModal();
+                window.location.href = url;
+            } else {
+                // Mostrar modal de desenvolvimento
+                console.log('Módulo não implementado, mostrando modal de desenvolvimento');
+                closeModal();
+                showDevelopmentModal(currentModule, nivel);
+            }
         }
 
         function showDevelopmentModal(module, nivel) {
