@@ -444,15 +444,73 @@
         function startModule(nivel) {
             if (!currentModule) return;
 
-            showToast(`🚀 Iniciando módulo "${currentModule.nome}" no nível ${nivel}...`, 'info');
+            // Por enquanto, mostrar que está em desenvolvimento
+            closeModal();
 
-            // TODO: Abrir interface do módulo prático
-            // Por enquanto, apenas fecha o modal
-            setTimeout(() => {
-                closeModal();
-                // Navegar para página do módulo
-                // window.location.href = `/modulos-bonus/${currentModule.codigo}/${nivel}.html`;
-            }, 1500);
+            showDevelopmentModal(currentModule, nivel);
+        }
+
+        function showDevelopmentModal(module, nivel) {
+            const pontos = nivel === 'facil' ? 50 : nivel === 'intermediario' ? 100 : 200;
+
+            const html = `
+                <div id="dev-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div class="glass-panel rounded-3xl max-w-2xl w-full p-8 border border-yellow-500/30 shadow-2xl">
+                        <div class="text-center">
+                            <div class="mx-auto w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mb-6">
+                                <span class="material-symbols-outlined text-yellow-400 text-5xl">construction</span>
+                            </div>
+                            
+                            <h2 class="text-2xl font-bold mb-3">Módulo em Desenvolvimento 🚧</h2>
+                            
+                            <div class="glass-panel p-4 rounded-xl mb-6">
+                                <p class="text-lg font-bold text-aec-pink mb-2">${module.nome}</p>
+                                <p class="text-sm text-slate-400">Nível: ${nivel.toUpperCase()} • ${pontos} pontos</p>
+                            </div>
+                            
+                            <p class="text-slate-300 mb-4 leading-relaxed">
+                                Este exercício prático interativo está sendo desenvolvido e estará disponível em breve!
+                            </p>
+                            
+                            <div class="bg-slate-900/50 rounded-lg p-4 mb-6 text-left">
+                                <h3 class="text-sm font-bold text-slate-400 mb-2">O QUE TERÁ NESTE MÓDULO:</h3>
+                                <p class="text-sm text-slate-300 mb-3">${module.descricao}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    ${(module.tecnologias || []).map(tech =>
+                `<span class="px-2 py-1 bg-slate-800 rounded text-xs">${tech}</span>`
+            ).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="closeDevelopmentModal()" 
+                                    class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-medium transition-colors">
+                                    Entendi
+                                </button>
+                                <button onclick="notifyInterest('${module.codigo}')" 
+                                    class="flex-1 bg-aec-pink hover:bg-aec-pinkDark text-white py-3 rounded-xl font-medium transition-colors">
+                                    😍 Me avise quando estiver pronto!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function closeDevelopmentModal() {
+            const devModal = document.getElementById('dev-modal');
+            if (devModal) devModal.remove();
+        }
+
+        function notifyInterest(moduleCodigo) {
+            showToast('✅ Anotado! Você será notificado quando este módulo estiver disponível!', 'success');
+            closeDevelopmentModal();
+
+            // TODO: Salvar interesse do usuário no banco
+            console.log('Usuário interessado no módulo:', moduleCodigo);
         }
 
         function updateStats() {
