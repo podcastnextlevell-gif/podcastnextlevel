@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construtor de Script | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .block {
+            cursor: move;
+            transition: all 0.3s;
+        }
+
+        .block:hover {
+            transform: scale(1.02);
+        }
+
+        .dropzone {
+            min-height: 100px;
+            border: 2px dashed #475569;
+        }
+
+        .dropzone.over {
+            border-color: #ec4899;
+            background: rgba(236, 72, 153, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">📝 Construtor de Script com Pico-Fim</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">Monte script com 4 blocos</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">Script com 6 blocos + análise emocional</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">Script completo 10 blocos + otimização</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="game-area" class="hidden">
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">🧩 Blocos Disponíveis</h3>
+                    <div id="blocks-pool" class="space-y-2"></div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">📋 Seu Script</h3>
+                    <div id="script-area" class="dropzone rounded-lg p-4" ondrop="drop(event)"
+                        ondragover="allowDrop(event)"></div>
+                    <div class="mt-4 flex justify-between text-sm">
+                        <span>Nível Emocional:</span>
+                        <span id="emotion-level" class="font-bold">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="validate()"
+                    class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg">
+                    ✅ VALIDAR SCRIPT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let script = [];
+        let blocks = [];
+
+        const blocksData = {
+            facil: [
+                { id: 1, text: 'Saudação calorosa', emotion: 3, required: true, position: 0 },
+                { id: 2, text: 'Identificar necessidade', emotion: 1, required: true, position: 1 },
+                { id: 3, text: 'Oferecer solução', emotion: 5, required: true, position: 2 },
+                { id: 4, text: 'Despedida positiva', emotion: 4, required: true, position: 3 }
+            ],
+            intermediario: [
+                { id: 1, text: 'Saudação personalizada', emotion: 4, required: true },
+                { id: 2, text: 'Empatia com situação', emotion: 5, required: true },
+                { id: 3, text: 'Perguntas de discovery', emotion: 2, required: true },
+                { id: 4, text: 'Apresentar benefícios', emotion: 6, required: true },
+                { id: 5, text: 'Lidar com objeção', emotion: 3, required: true },
+                { id: 6, text: 'Fechamento memorável', emotion: 7, required: true }
+            ],
+            dificil: [
+                { id: 1, text: 'Abertura impactante', emotion: 5 },
+                { id: 2, text: 'Rapport inicial', emotion: 4 },
+                { id: 3, text: 'Discovery profundo', emotion: 2 },
+                { id: 4, text: 'Personalização', emotion: 3 },
+                { id: 5, text: 'Momento PICO', emotion: 9 },
+                { id: 6, text: 'Prova social', emotion: 6 },
+                { id: 7, text: 'Objeções', emotion: 3 },
+                { id: 8, text: 'Proposta de valor', emotion: 7 },
+                { id: 9, text: 'Call-to-Action', emotion: 6 },
+                { id: 10, text: 'Fim memorável', emotion: 8 }
+            ]
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            blocks = [...blocksData[level]];
+            script = [];
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+
+            renderBlocks();
+        }
+
+        function renderBlocks() {
+            const pool = document.getElementById('blocks-pool');
+            pool.innerHTML = blocks.map(b => `
+                <div class="block glass-panel rounded-lg p-3 cursor-move" draggable="true" ondragstart="drag(event)" id="block-${b.id}">
+                    ${b.text}
+                </div>
+            `).join('');
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('over');
+
+            const data = ev.dataTransfer.getData("text");
+            const blockId = parseInt(data.replace('block-', ''));
+            const block = blocks.find(b => b.id === blockId);
+
+            if (block && !script.includes(blockId)) {
+                script.push(blockId);
+                updateScript();
+            }
+        }
+
+        function updateScript() {
+            const area = document.getElementById('script-area');
+            area.innerHTML = script.map((id, i) => {
+                const block = blocks.find(b => b.id === id);
+                return `
+                    <div class="bg-purple-500/20 rounded-lg p-3 mb-2 flex justify-between items-center">
+                        <span>${i + 1}. ${block.text}</span>
+                        <button onclick="removeFromScript(${i})" class="text-red-400 hover:text-red-300">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            const avgEmotion = script.length > 0 ? (script.reduce((acc, id) => acc + blocks.find(b => b.id === id).emotion, 0) / script.length).toFixed(1) : 0;
+            document.getElementById('emotion-level').textContent = `${avgEmotion}/10`;
+        }
+
+        function removeFromScript(index) {
+            script.splice(index, 1);
+            updateScript();
+        }
+
+        function validate() {
+            const requiredCount = currentLevel === 'facil' ? 4 : currentLevel === 'intermediario' ? 6 : 10;
+            const avgEmotion = script.reduce((acc, id) => acc + blocks.find(b => b.id === id).emotion, 0) / script.length;
+            const hasPico = script.some(id => blocks.find(b => b.id === id).emotion >= 7);
+            const hasFim = script.length > 0 && blocks.find(b => b.id === script[script.length - 1]).emotion >= 6;
+
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+
+            if (script.length >= requiredCount && hasPico && hasFim) {
+                alert(`🎉 Script perfeito! Pico e Fim bem aplicados!\n\nNível emocional: ${avgEmotion.toFixed(1)}/10\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                let message = '⚠️ Script incompleto:\n\n';
+                if (script.length < requiredCount) message += `❌ Faltam blocos (${script.length}/${requiredCount})\n`;
+                if (!hasPico) message += `❌ Sem momento PICO (emoção 7+)\n`;
+                if (!hasFim) message += `❌ Fim não memorável (emoção 6+)\n`;
+                alert(message);
+            }
+        }
+    </script>
+</body>
+
+</html>

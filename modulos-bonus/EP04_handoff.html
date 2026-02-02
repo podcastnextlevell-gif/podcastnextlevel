@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Handoff | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .message {
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">🔄 Simulador de Handoff de Atendimento</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">Gerencie 1 transferência simples</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">2 transferências + contexto</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">Múltiplas transferências + omnichannel</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="game-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <h3 class="text-lg font-bold mb-4">💬 Conversa do Cliente</h3>
+                <div id="chat" class="space-y-3 max-h-96 overflow-y-auto mb-4"></div>
+
+                <div id="action-area"></div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-2">📋 Histórico do Cliente</h3>
+                <div id="history" class="text-sm text-slate-300"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let scenario = null;
+        let step = 0;
+        let score = 0;
+
+        const scenarios = {
+            facil: {
+                steps: [
+                    { type: 'customer', text: 'Olá, preciso cancelar meu pedido #12345' },
+                    {
+                        type: 'choice', question: 'Como você responde?', options: [
+                            { text: 'Transferir para cancelamentos COM histórico', correct: true, points: 50 },
+                            { text: 'Transferir SEM passar informações', correct: false, points: 0 }
+                        ]
+                    }
+                ]
+            },
+            intermediario: {
+                steps: [
+                    { type: 'customer', text: 'Meu pedido #12345 veio errado e quero trocar' },
+                    {
+                        type: 'choice', question: 'O que fazer?', options: [
+                            { text: 'Transferir para logística COM: pedido, problema, solicitação', correct: true, points: 50 },
+                            { text: 'Transferir apenas dizendo "cliente quer trocar"', correct: false, points: 0 }
+                        ]
+                    },
+                    { type: 'customer', text: 'Também quero cancelar outro pedido #67890' },
+                    {
+                        type: 'choice', question: 'Como proceder?', options: [
+                            { text: 'Atualizar contexto e incluir ambos os pedidos na transferência', correct: true, points: 50 },
+                            { text: 'Pedir para cliente ligar novamente', correct: false, points: 0 }
+                        ]
+                    }
+                ]
+            },
+            dificil: {
+                steps: [
+                    { type: 'customer', text: 'Iniciei no chat mas ninguém resolveu. Me cobraram errado!' },
+                    {
+                        type: 'choice', question: 'Primeira ação:', options: [
+                            { text: 'Buscar histórico do chat + verificar cobrança', correct: true, points: 30 },
+                            { text: 'Pedir para explicar tudo novamente', correct: false, points: 0 }
+                        ]
+                    },
+                    { type: 'customer', text: 'Já falei 3 vezes a mesma coisa!' },
+                    {
+                        type: 'choice', question: 'Como acalmar?', options: [
+                            { text: 'Reconhecer frustração + confirmar dados do histórico', correct: true, points: 40 },
+                            { text: 'Transferir para supervisor', correct: false, points: 10 }
+                        ]
+                    },
+                    { type: 'customer', text: 'Quero reembolso urgente!' },
+                    {
+                        type: 'choice', question: 'Ação final:', options: [
+                            { text: 'Transferir para financeiro COM: histórico completo, tentativas anteriores, urgência', correct: true, points: 50 },
+                            { text: 'Prometer resolver e transferir sem contexto', correct: false, points: 0 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            scenario = scenarios[level];
+            step = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            document.getElementById('history').textContent = 'Cliente Silver • 3 compras • NPS anterior: 8';
+
+            nextStep();
+        }
+
+        function nextStep() {
+            if (step >= scenario.steps.length) {
+                finish();
+                return;
+            }
+
+            const currentStep = scenario.steps[step];
+            const chat = document.getElementById('chat');
+
+            if (currentStep.type === 'customer') {
+                chat.innerHTML += `
+                    <div class="message flex gap-3">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-xs">👤</div>
+                        <div class="flex-1 bg-blue-500/20 rounded-lg p-3">${currentStep.text}</div>
+                    </div>
+                `;
+                step++;
+                setTimeout(nextStep, 1000);
+            } else if (currentStep.type === 'choice') {
+                const actionArea = document.getElementById('action-area');
+                actionArea.innerHTML = `
+                    <div class="mt-4">
+                        <p class="font-bold mb-3">${currentStep.question}</p>
+                        <div class="space-y-2">
+                            ${currentStep.options.map((opt, i) => `
+                                <button onclick="choose(${i})" class="w-full text-left bg-slate-800 hover:bg-slate-700 rounded-lg p-3 transition-all">
+                                    ${opt.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function choose(index) {
+            const currentStep = scenario.steps[step];
+            const choice = currentStep.options[index];
+
+            score += choice.points;
+
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `
+                <div class="message flex gap-3 justify-end">
+                    <div class="flex-1 bg-green-500/20 rounded-lg p-3 text-right">${choice.text}</div>
+                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-xs">🎧</div>
+                </div>
+            `;
+
+            if (choice.correct) {
+                chat.innerHTML += `<div class="text-center text-green-400 text-sm">✅ +${choice.points} pontos</div>`;
+            } else {
+                chat.innerHTML += `<div class="text-center text-red-400 text-sm">❌ Handoff inadequado</div>`;
+            }
+
+            step++;
+            document.getElementById('action-area').innerHTML = '';
+
+            setTimeout(nextStep, 1500);
+        }
+
+        function finish() {
+            const maxScore = scenario.steps.filter(s => s.type === 'choice').reduce((acc, s) => acc + Math.max(...s.options.map(o => o.points)), 0);
+            const percent = (score / maxScore * 100).toFixed(0);
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+
+            if (percent >= 80) {
+                alert(`🎉 Handoff perfeito! ${percent}% de acerto.\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 Você fez ${percent}% dos handoffs corretamente.\n\nPrecisa de 80% para passar. Tente novamente!`);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Jornada do Cliente | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .touchpoint {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .touchpoint:hover {
+            transform: scale(1.1);
+        }
+
+        .touchpoint.active {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">🛍️ Simulador de Jornada do Cliente</h1>
+            <p class="text-slate-400">Identifique pontos de fricção e melhore a experiência</p>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 hover:bg-green-500/30 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold text-lg">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm text-slate-300 mt-2">Identifique 3 pontos de fricção básicos</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 hover:bg-orange-500/30 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold text-lg">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm text-slate-300 mt-2">Analise 6 touchpoints + sugira melhorias</p>
+                </button>
+                <button onclick="startLevel('dificil')"
+                    class="bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold text-lg">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm text-slate-300 mt-2">Mapeie jornada completa + priorize ações</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="game-area" class="hidden">
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">📊 Métricas Atuais</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span>NPS:</span>
+                            <span id="nps-score" class="font-bold text-red-400">45</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>CES:</span>
+                            <span id="ces-score" class="font-bold text-orange-400">4.5</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Taxa de Conversão:</span>
+                            <span id="conv-score" class="font-bold text-yellow-400">12%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">🎯 Objetivo</h3>
+                    <p id="objective" class="text-slate-300 text-sm"></p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <h3 class="text-lg font-bold mb-4">🗺️ Jornada do Cliente</h3>
+                <div id="journey-map" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            </div>
+
+            <div id="analysis" class="glass-panel rounded-2xl p-6 mb-6 hidden">
+                <h3 class="text-lg font-bold mb-4">💡 Sua Análise</h3>
+                <div id="analysis-content"></div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="validateAnalysis()"
+                    class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg">
+                    ✅ VALIDAR ANÁLISE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let selectedTouchpoints = new Set();
+        let requiredFinds = 0;
+
+        const touchpointsData = {
+            facil: [
+                { id: 1, name: 'Site Lento', icon: 'schedule', problem: true },
+                { id: 2, name: 'Checkout Simples', icon: 'shopping_cart', problem: false },
+                { id: 3, name: 'Frete Caro', icon: 'local_shipping', problem: true },
+                { id: 4, name: 'Atendimento Bom', icon: 'support_agent', problem: false },
+                { id: 5, name: 'Email Confuso', icon: 'email', problem: true },
+                { id: 6, name: 'Produto OK', icon: 'inventory', problem: false }
+            ],
+            intermediario: [
+                { id: 1, name: 'Navegação Confusa', icon: 'explore', problem: true },
+                { id: 2, name: 'Busca Ineficiente', icon: 'search', problem: true },
+                { id: 3, name: 'Checkout', icon: 'shopping_cart', problem: true },
+                { id: 4, name: 'Pagamento Limitado', icon: 'payment', problem: true },
+                { id: 5, name: 'Frete', icon: 'local_shipping', problem: true },
+                { id: 6, name: 'Pós-venda Fraco', icon: 'support', problem: true },
+                { id: 7, name: 'Reviews Positivos', icon: 'star', problem: false },
+                { id: 8, name: 'Entrega Rápida', icon: 'rocket_launch', problem: false }
+            ],
+            dificil: [
+                { id: 1, name: 'Landing Page', icon: 'web', problem: true },
+                { id: 2, name: 'Cadastro', icon: 'person_add', problem: true },
+                { id: 3, name: 'Navegação', icon: 'explore', problem: true },
+                { id: 4, name: 'Busca', icon: 'search', problem: true },
+                { id: 5, name: 'Produto', icon: 'inventory', problem: false },
+                { id: 6, name: 'Carrinho', icon: 'shopping_cart', problem: true },
+                { id: 7, name: 'Checkout', icon: 'payment', problem: true },
+                { id: 8, name: 'Confirmação', icon: 'check_circle', problem: false },
+                { id: 9, name: 'Frete', icon: 'local_shipping', problem: true },
+                { id: 10, name: 'Rastreamento', icon: 'location_on', problem: true },
+                { id: 11, name: 'Entrega', icon: 'package', problem: false },
+                { id: 12, name: 'Pós-venda', icon: 'support', problem: true }
+            ]
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            const touchpoints = touchpointsData[level];
+            requiredFinds = touchpoints.filter(t => t.problem).length;
+            selectedTouchpoints.clear();
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+
+            const objectives = {
+                facil: `Encontre os ${requiredFinds} pontos de fricção que estão prejudicando a experiência do cliente.`,
+                intermediario: `Identifique os ${requiredFinds} touchpoints problemáticos e sugira melhorias específicas.`,
+                dificil: `Mapeie toda a jornada, encontre os ${requiredFinds} pontos críticos e priorize ações de melhoria.`
+            };
+
+            document.getElementById('objective').textContent = objectives[level];
+
+            renderJourneyMap(touchpoints);
+        }
+
+        function renderJourneyMap(touchpoints) {
+            const map = document.getElementById('journey-map');
+            map.innerHTML = touchpoints.map(tp => `
+                <div class="touchpoint glass-panel rounded-xl p-4 text-center ${tp.problem ? 'border-2 border-red-500/30' : 'border border-green-500/30'}"
+                     onclick="toggleTouchpoint(${tp.id})">
+                    <span class="material-symbols-outlined text-4xl mb-2">${tp.icon}</span>
+                    <p class="text-sm font-medium">${tp.name}</p>
+                    <div id="selected-${tp.id}" class="mt-2 hidden">
+                        <span class="text-xs bg-purple-500/20 px-2 py-1 rounded">✓ Selecionado</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleTouchpoint(id) {
+            if (selectedTouchpoints.has(id)) {
+                selectedTouchpoints.delete(id);
+                document.getElementById(`selected-${id}`).classList.add('hidden');
+            } else {
+                selectedTouchpoints.add(id);
+                document.getElementById(`selected-${id}`).classList.remove('hidden');
+            }
+        }
+
+        function validateAnalysis() {
+            const touchpoints = touchpointsData[currentLevel];
+            const problemIds = new Set(touchpoints.filter(t => t.problem).map(t => t.id));
+
+            const correctFinds = Array.from(selectedTouchpoints).filter(id => problemIds.has(id)).length;
+            const incorrectFinds = selectedTouchpoints.size - correctFinds;
+            const missed = problemIds.size - correctFinds;
+
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+            const scorePercent = (correctFinds / problemIds.size * 100).toFixed(0);
+
+            if (scorePercent >= 80) {
+                alert(`🎉 Excelente! Você identificou ${correctFinds} de ${problemIds.size} problemas!\n\n+${points} pontos conquistados!`);
+                setTimeout(() => window.location.href = '../bonus.html', 1500);
+            } else {
+                alert(`⚠️ Você acertou ${scorePercent}%\n\nCorretos: ${correctFinds}\nErros: ${incorrectFinds}\nFaltantes: ${missed}\n\nTente novamente! (Mínimo: 80%)`);
+            }
+        }
+    </script>
+</body>
+
+</html>

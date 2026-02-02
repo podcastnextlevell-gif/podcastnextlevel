@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap de Estudos | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .skill-badge {
+            cursor: move;
+            transition: all 0.3s;
+        }
+
+        .skill-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .timeline-slot {
+            min-height: 60px;
+            border: 2px dashed #475569;
+            transition: all 0.3s;
+        }
+
+        .timeline-slot.drag-over {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .timeline-slot.filled {
+            border-style: solid;
+            border-color: #10b981;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar para Módulos Bônus
+            </a>
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-green-500/20 rounded-2xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-green-400 text-4xl">map</span>
+                </div>
+                <div>
+                    <span class="text-xs text-green-400 font-bold" id="level-badge">T0: INTRO</span>
+                    <h1 class="text-3xl font-bold">Construtor de Roadmap de Estudos</h1>
+                    <p class="text-slate-400">Monte seu plano de estudos para virar Analista de Qualidade</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8 mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-center">Escolha o Nível de Dificuldade</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 hover:bg-green-500/30 border-2 border-green-500/50 rounded-xl p-6 text-left transition-all">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-green-400 font-bold text-lg">⭐ FÁCIL</span>
+                        <span class="text-green-400 text-3xl font-bold">50 pts</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-2">Organize 3 competências essenciais</p>
+                    <p class="text-xs text-slate-500">Objetivo: Completar timeline de 3 meses</p>
+                </button>
+
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 hover:bg-orange-500/30 border-2 border-orange-500/50 rounded-xl p-6 text-left transition-all">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-orange-400 font-bold text-lg">⭐⭐ INTERMEDIÁRIO</span>
+                        <span class="text-orange-400 text-3xl font-bold">100 pts</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-2">Organize 6 competências + timing</p>
+                    <p class="text-xs text-slate-500">Objetivo: Timeline de 6 meses balanceada</p>
+                </button>
+
+                <button onclick="startLevel('dificil')"
+                    class="bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500/50 rounded-xl p-6 text-left transition-all">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-red-400 font-bold text-lg">⭐⭐⭐ DIFÍCIL</span>
+                        <span class="text-red-400 text-3xl font-bold">200 pts</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-2">Organize 12 skills + dependências</p>
+                    <p class="text-xs text-slate-500">Objetivo: Roadmap completo 12 meses</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="game-area" class="hidden">
+            <!-- Available Skills -->
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <h3 class="text-lg font-bold mb-4">📚 Competências Disponíveis</h3>
+                <div id="skills-pool" class="flex flex-wrap gap-3"></div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <h3 class="text-lg font-bold mb-4">📅 Sua Timeline de Estudos</h3>
+                <div id="timeline-grid" class="grid gap-4"></div>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback" class="glass-panel rounded-2xl p-6 mb-6 hidden">
+                <div class="flex items-center gap-4">
+                    <span id="feedback-icon" class="material-symbols-outlined text-5xl"></span>
+                    <div>
+                        <h3 id="feedback-title" class="text-2xl font-bold mb-2"></h3>
+                        <p id="feedback-text" class="text-slate-300"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="validateRoadmap()"
+                    class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-green-500/50 transition-all hover:scale-105">
+                    ✅ VALIDAR ROADMAP
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let timeline = {};
+        let requiredSkills = [];
+
+        const skillsData = {
+            facil: ['Excel Básico', 'Métricas CX', 'SQL Iniciante'],
+            intermediario: ['Excel Avançado', 'Power BI', 'SQL Intermediário', 'Python Básico', 'Estatística', 'Dashboard'],
+            dificil: ['Excel', 'Power BI', 'SQL', 'Python', 'Estatística', 'Dashboard', 'Machine Learning', 'APIs', 'Cloud', 'Git', 'Soft Skills', 'Gestão de Projetos']
+        };
+
+        const timelineConfig = {
+            facil: { months: 3, skillsPerMonth: 1 },
+            intermediario: { months: 6, skillsPerMonth: 1 },
+            dificil: { months: 12, skillsPerMonth: 1 }
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            const config = timelineConfig[level];
+            requiredSkills = [...skillsData[level]];
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+
+            const badge = level === 'facil' ? '⭐ FÁCIL' : level === 'intermediario' ? '⭐⭐ INTERMEDIÁRIO' : '⭐⭐⭐ DIFÍCIL';
+            document.getElementById('level-badge').textContent = `T0: INTRO • ${badge}`;
+
+            renderSkillsPool();
+            renderTimeline(config.months);
+        }
+
+        function renderSkillsPool() {
+            const pool = document.getElementById('skills-pool');
+            pool.innerHTML = requiredSkills.map((skill, i) => `
+                <div class="skill-badge px-4 py-2 bg-blue-500/20 border border-blue-500/50 rounded-lg text-sm font-medium" 
+                     draggable="true" 
+                     ondragstart="drag(event)" 
+                     id="skill-${i}">
+                    ${skill}
+                </div>
+            `).join('');
+        }
+
+        function renderTimeline(months) {
+            const grid = document.getElementById('timeline-grid');
+            timeline = {};
+
+            const columns = months <= 3 ? 1 : months <= 6 ? 2 : 3;
+            grid.className = `grid grid-cols-1 md:grid-cols-${columns} gap-4`;
+
+            grid.innerHTML = Array.from({ length: months }, (_, i) => {
+                const month = i + 1;
+                timeline[month] = null;
+                return `
+                    <div class="timeline-slot rounded-xl p-4" 
+                         ondrop="drop(event, ${month})" 
+                         ondragover="allowDrop(event)"
+                         id="month-${month}">
+                        <div class="text-xs text-slate-500 mb-2">Mês ${month}</div>
+                        <div id="slot-${month}" class="min-h-[40px] flex items-center justify-center text-slate-600">
+                            Arraste uma skill aqui
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev, month) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+
+            const data = ev.dataTransfer.getData("text");
+            const skillElement = document.getElementById(data);
+
+            if (!skillElement) return;
+
+            // Clear previous slot if skill was already placed
+            Object.keys(timeline).forEach(m => {
+                if (timeline[m] === skillElement.textContent) {
+                    timeline[m] = null;
+                    document.getElementById(`slot-${m}`).innerHTML = 'Arraste uma skill aqui';
+                    document.getElementById(`month-${m}`).classList.remove('filled');
+                }
+            });
+
+            timeline[month] = skillElement.textContent;
+            document.getElementById(`slot-${month}`).innerHTML = `
+                <div class="px-3 py-2 bg-green-500/20 border border-green-500/50 rounded-lg text-sm font-medium">
+                    ${skillElement.textContent}
+                </div>
+            `;
+            document.getElementById(`month-${month}`).classList.add('filled');
+
+            skillElement.remove();
+        }
+
+        function validateRoadmap() {
+            const filled = Object.values(timeline).filter(v => v !== null).length;
+            const required = requiredSkills.length;
+
+            const feedback = document.getElementById('feedback');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const text = document.getElementById('feedback-text');
+
+            feedback.classList.remove('hidden');
+
+            if (filled === required) {
+                // Success!
+                icon.textContent = 'celebration';
+                icon.className = 'material-symbols-outlined text-5xl text-green-400';
+                title.textContent = '🎉 Roadmap Validado!';
+
+                const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+                text.textContent = `Parabéns! Você organizou todas as ${required} competências. +${points} pontos conquistados!`;
+
+                setTimeout(() => {
+                    if (confirm(`Você ganhou ${points} pontos! Voltar para módulos bônus?`)) {
+                        window.location.href = '../bonus.html';
+                    }
+                }, 2000);
+            } else {
+                // Incomplete
+                icon.textContent = 'warning';
+                icon.className = 'material-symbols-outlined text-5xl text-yellow-400';
+                title.textContent = '⚠️ Roadmap Incompleto';
+                text.textContent = `Você preencheu ${filled} de ${required} competências. Preencha todas para validar!`;
+            }
+        }
+    </script>
+</body>
+
+</html>

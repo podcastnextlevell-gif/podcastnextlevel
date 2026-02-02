@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Alerta de Churn | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .customer-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .customer-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .customer-card.selected {
+            border-color: #ec4899;
+            background: rgba(236, 72, 153, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">🎯 Simulador de Alerta de Churn</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">Identifique 3 clientes em risco (alto churn)</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">5 clientes + priorize por impacto</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">10 clientes + ações específicas</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="game-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">📋 Lista de Clientes</h3>
+                    <div class="text-sm">
+                        Selecionados: <span id="selected-count" class="font-bold text-pink-400">0</span>
+                    </div>
+                </div>
+                <div id="customers-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="validate()"
+                    class="bg-gradient-to-r from-red-500 to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg">
+                    ✅ VALIDAR SELEÇÃO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let selected = new Set();
+        let customers = [];
+
+        const customersData = {
+            facil: [
+                { id: 1, name: 'Ana Silva', ltv: 5000, nps: 3, tickets: 5, daysSinceContact: 45, churnRisk: 95 },
+                { id: 2, name: 'Carlos Souza', ltv: 8000, nps: 9, tickets: 1, daysSinceContact: 10, churnRisk: 15 },
+                { id: 3, name: 'Maria Oliveira', ltv: 3000, nps: 4, tickets: 8, daysSinceContact: 60, churnRisk: 88 },
+                { id: 4, name: 'João Santos', ltv: 12000, nps: 8, tickets: 0, daysSinceContact: 5, churnRisk: 10 },
+                { id: 5, name: 'Beatriz Lima', ltv: 4500, nps: 2, tickets: 12, daysSinceContact: 90, churnRisk: 92 }
+            ],
+            intermediario: [
+                { id: 1, name: 'Pedro Costa', ltv: 15000, nps: 5, tickets: 6, daysSinceContact: 35, churnRisk: 75 },
+                { id: 2, name: 'Juliana Ferreira', ltv: 2000, nps: 8, tickets: 2, daysSinceContact: 15, churnRisk: 25 },
+                { id: 3, name: 'Roberto Alves', ltv: 9000, nps: 3, tickets: 10, daysSinceContact: 50, churnRisk: 82 },
+                { id: 4, name: 'Fernanda Gomes', ltv: 18000, nps: 4, tickets: 8, daysSinceContact: 40, churnRisk: 78 },
+                { id: 5, name: 'Lucas Martins', ltv: 5000, nps: 9, tickets: 1, daysSinceContact: 7, churnRisk: 12 },
+                { id: 6, name: 'Camila Rodrigues', ltv: 7500, nps: 2, tickets: 15, daysSinceContact: 70, churnRisk: 90 },
+                { id: 7, name: 'Ricardo Pereira', ltv: 11000, nps: 7, tickets: 3, daysSinceContact: 20, churnRisk: 35 },
+                { id: 8, name: 'Patrícia Dias', ltv: 20000, nps: 3, tickets: 12, daysSinceContact: 55, churnRisk: 85 }
+            ],
+            dificil: [
+                { id: 1, name: 'André Nascimento', ltv: 25000, nps: 4, tickets: 9, daysSinceContact: 45, churnRisk: 80 },
+                { id: 2, name: 'Gabriela Castro', ltv: 3500, nps: 8, tickets: 2, daysSinceContact: 12, churnRisk: 20 },
+                { id: 3, name: 'Felipe Barbosa', ltv: 17000, nps: 3, tickets: 11, daysSinceContact: 60, churnRisk: 88 },
+                { id: 4, name: 'Renata Ribeiro', ltv: 8000, nps: 6, tickets: 5, daysSinceContact: 25, churnRisk: 45 },
+                { id: 5, name: 'Marcos Teixeira', ltv: 30000, nps: 2, tickets: 14, daysSinceContact: 75, churnRisk: 95 },
+                { id: 6, name: 'Aline Cardoso', ltv: 6000, nps: 9, tickets: 1, daysSinceContact: 8, churnRisk: 10 },
+                { id: 7, name: 'Bruno Monteiro', ltv: 22000, nps: 4, tickets: 8, daysSinceContact: 50, churnRisk: 78 },
+                { id: 8, name: 'Larissa Araújo', ltv: 4000, nps: 7, tickets: 3, daysSinceContact: 18, churnRisk: 30 },
+                { id: 9, name: 'Thiago Cavalcanti', ltv: 19000, nps: 3, tickets: 13, daysSinceContact: 65, churnRisk: 90 },
+                { id: 10, name: 'Vanessa Correia', ltv: 28000, nps: 5, tickets: 7, daysSinceContact: 40, churnRisk: 72 },
+                { id: 11, name: 'Diego Pinto', ltv: 10000, nps: 8, tickets: 2, daysSinceContact: 10, churnRisk: 15 },
+                { id: 12, name: 'Carolina Vieira', ltv: 16000, nps: 3, tickets: 10, daysSinceContact: 55, churnRisk: 85 }
+            ]
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            customers = [...customersData[level]];
+            selected.clear();
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+
+            renderCustomers();
+        }
+
+        function renderCustomers() {
+            const list = document.getElementById('customers-list');
+            list.innerHTML = customers.map(c => {
+                const riskColor = c.churnRisk >= 70 ? 'text-red-400' : c.churnRisk >= 40 ? 'text-yellow-400' : 'text-green-400';
+                return `
+                    <div class="customer-card glass-panel rounded-xl p-4 border ${selected.has(c.id) ? 'selected border-pink-500' : 'border-slate-700'}"
+                         onclick="toggleCustomer(${c.id})">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-bold">${c.name}</h4>
+                            <span class="${riskColor} font-bold text-lg">${c.churnRisk}%</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                            <div>LTV: R$ ${c.ltv.toLocaleString('pt-BR')}</div>
+                            <div>NPS: ${c.nps}</div>
+                            <div>Tickets: ${c.tickets}</div>
+                            <div>${c.daysSinceContact} dias sem contato</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleCustomer(id) {
+            if (selected.has(id)) {
+                selected.delete(id);
+            } else {
+                selected.add(id);
+            }
+            document.getElementById('selected-count').textContent = selected.size;
+            renderCustomers();
+        }
+
+        function validate() {
+            const highRisk = customers.filter(c => c.churnRisk >= 70).map(c => c.id);
+            const correctSelections = Array.from(selected).filter(id => highRisk.includes(id)).length;
+            const incorrectSelections = selected.size - correctSelections;
+            const missed = highRisk.filter(id => !selected.has(id)).length;
+
+            const requiredCount = currentLevel === 'facil' ? 3 : currentLevel === 'intermediario' ? 5 : 10;
+            const accuracy = (correctSelections / highRisk.length * 100).toFixed(0);
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+
+            if (accuracy >= 80 && selected.size >= requiredCount) {
+                alert(`🎉 Excelente! Você identificou ${correctSelections} clientes de alto risco!\n\nAcurácia: ${accuracy}%\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 Resultado:\n\nCorretos: ${correctSelections}\nErros: ${incorrectSelections}\nPerdidos: ${missed}\nAcurácia: ${accuracy}%\n\nPrecisa de 80% de acurácia e ${requiredCount} seleções!`);
+            }
+        }
+    </script>
+</body>
+
+</html>
