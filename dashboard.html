@@ -5,6 +5,17 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Dashboard | Next Level Podcast</title>
+
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ec4899">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Next Level">
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icons/icon-512x512.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
@@ -55,6 +66,80 @@
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen font-sans">
+
+    <!-- PWA Install Popup Modal -->
+    <div id="pwa-install-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+        <div
+            class="glass-panel rounded-3xl max-w-md w-full p-8 border border-aec-pink/30 shadow-2xl shadow-aec-pink/20 animate-slide-up">
+            <div class="text-center">
+                <!-- Icon -->
+                <div
+                    class="mx-auto w-24 h-24 bg-gradient-to-br from-aec-pink to-purple-600 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-aec-pink/50 transform hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined text-white text-5xl">install_mobile</span>
+                </div>
+
+                <!-- Title -->
+                <h2 class="text-2xl font-bold mb-3">
+                    Instale o <span class="gradient-text">Next Level App</span>
+                </h2>
+
+                <!-- Description -->
+                <p class="text-slate-400 mb-6 leading-relaxed">
+                    📱 Acesse o conteúdo offline<br>
+                    🔔 Receba notificações de novas temporadas<br>
+                    ⚡ Experiência rápida e fluida
+                </p>
+
+                <!-- Badges -->
+                <div class="flex items-center justify-center gap-3 mb-8">
+                    <div class="flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full text-xs">
+                        <span class="material-symbols-outlined text-sm text-green-400">android</span>
+                        <span class="text-slate-300">Android</span>
+                    </div>
+                    <div class="flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full text-xs">
+                        <span class="material-symbols-outlined text-sm text-slate-300">apple</span>
+                        <span class="text-slate-300">iOS</span>
+                    </div>
+                    <div class="flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full text-xs">
+                        <span class="material-symbols-outlined text-sm text-blue-400">computer</span>
+                        <span class="text-slate-300">Desktop</span>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex flex-col gap-3">
+                    <button id="modal-install-btn" onclick="installPWAFromModal()"
+                        class="w-full bg-gradient-to-r from-aec-pink to-purple-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-aec-pink/50 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-2xl">download</span>
+                        INSTALAR AGORA
+                    </button>
+
+                    <button onclick="closePWAModal()"
+                        class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-medium transition-colors">
+                        Agora não
+                    </button>
+                </div>
+
+                <p class="text-xs text-slate-600 mt-4">
+                    Você pode instalar depois clicando no botão flutuante
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Floating Button -->
+    <button id="pwa-install-btn" onclick="window.PWA.install()"
+        class="hidden fixed bottom-6 right-6 z-40 w-16 h-16 bg-gradient-to-br from-aec-pink to-purple-600 rounded-full shadow-2xl shadow-aec-pink/50 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group">
+        <span
+            class="material-symbols-outlined text-white text-3xl group-hover:rotate-12 transition-transform">install_mobile</span>
+        <!-- Tooltip -->
+        <div
+            class="absolute bottom-full right-0 mb-2 w-max px-4 py-2 bg-slate-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Instalar App
+            <div class="absolute top-full right-4 -mt-1 border-8 border-transparent border-t-slate-900"></div>
+        </div>
+    </button>
 
     <!-- Navbar -->
     <nav class="sticky top-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md">
@@ -391,8 +476,61 @@
             window.location.href = 'index.html';
         }
 
+        // PWA Install Modal Functions
+        function installPWAFromModal() {
+            if (window.PWA && window.PWA.install) {
+                window.PWA.install();
+                closePWAModal();
+            }
+        }
+
+        function closePWAModal() {
+            document.getElementById('pwa-install-modal').classList.add('hidden');
+            localStorage.setItem('pwa-modal-dismissed', new Date().toISOString());
+        }
+
+        function showPWAModal() {
+            // Não mostra se já está instalado
+            if (window.PWA && window.PWA.isInstalled()) {
+                return;
+            }
+
+            // Não mostra se foi dispensado hoje
+            const dismissed = localStorage.getItem('pwa-modal-dismissed');
+            if (dismissed) {
+                const dismissedDate = new Date(dismissed);
+                const today = new Date();
+                if (dismissedDate.toDateString() === today.toDateString()) {
+                    return;
+                }
+            }
+
+            // Mostra modal após 2 segundos do carregamento
+            setTimeout(() => {
+                document.getElementById('pwa-install-modal').classList.remove('hidden');
+            }, 2000);
+        }
+
+        // Mostra/esconde botão flutuante baseado em disponibilidade
+        window.addEventListener('beforeinstallprompt', (e) => {
+            document.getElementById('pwa-install-btn').classList.remove('hidden');
+        });
+
+        window.addEventListener('appinstalled', (e) => {
+            document.getElementById('pwa-install-btn').classList.add('hidden');
+            closePWAModal();
+        });
+
+        // Chama o modal ao carregar a página
+        window.addEventListener('load', () => {
+            showPWAModal();
+        });
+
         init();
     </script>
+
+    <!-- PWA Install Script -->
+    <script src="/js/pwa-install.js" defer></script>
 </body>
 
 </html>
