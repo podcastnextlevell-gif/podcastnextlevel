@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Módulos Bônus | Next Level Podcast</title>
+
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ec4899">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Next Level">
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/icons/icon-512x512.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        aec: { blue: '#0032A1', dark: '#001E4B', pink: '#ec4899', pinkDark: '#be185d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ec4899;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .module-card {
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .module-locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen font-sans">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-aec-pink text-2xl">podcasts</span>
+                    <span class="font-bold">Next <span class="gradient-text">Level</span></span>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <a href="dashboard.html"
+                        class="text-slate-400 hover:text-white text-sm flex items-center gap-1 transition-colors">
+                        <span class="material-symbols-outlined text-lg">dashboard</span>
+                        Dashboard
+                    </a>
+                    <a href="ranking.html"
+                        class="text-slate-400 hover:text-white text-sm flex items-center gap-1 transition-colors">
+                        <span class="material-symbols-outlined text-lg">leaderboard</span>
+                        Ranking
+                    </a>
+                    <div class="h-6 w-px bg-slate-700"></div>
+                    <div id="user-info" class="flex items-center gap-3">
+                        <span id="user-nickname" class="text-sm text-slate-300"></span>
+                        <button onclick="logout()" class="text-slate-400 hover:text-red-400 transition-colors"
+                            title="Sair">
+                            <span class="material-symbols-outlined">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+
+        <!-- Header Section -->
+        <section class="mb-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-2xl">redeem</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold">Módulos <span class="gradient-text">Bônus</span></h1>
+                    <p class="text-slate-400 text-sm">Exercícios práticos interativos para reforçar seu aprendizado</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-green-400 text-2xl">check_circle</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm text-slate-400">Completados</h3>
+                            <p id="stat-completed" class="text-2xl font-bold">0/28</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-yellow-400 text-2xl">stars</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm text-slate-400">Pontos Ganhos</h3>
+                            <p id="stat-points" class="text-2xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-purple-400 text-2xl">school</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm text-slate-400">Temporadas</h3>
+                            <p id="stat-seasons" class="text-2xl font-bold">0/8</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-aec-pink/20 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-aec-pink text-2xl">trophy</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm text-slate-400">Nível Médio</h3>
+                            <p id="stat-level" class="text-2xl font-bold">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button onclick="filterByTemporada('all')"
+                    class="filter-btn active px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors">
+                    Todas
+                </button>
+                <button onclick="filterByTemporada(0)"
+                    class="filter-btn px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors">
+                    T0: Intro
+                </button>
+                <button onclick="filterByTemporada(1)"
+                    class="filter-btn px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors">
+                    T1: CX Avançado
+                </button>
+                <button onclick="filterByTemporada(2)"
+                    class="filter-btn px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors">
+                    T2: IA Aplicada
+                </button>
+                <button onclick="filterByTemporada(3)"
+                    class="filter-btn px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors">
+                    T3: Data-Driven
+                </button>
+                <button onclick="filterByTemporada(4)"
+                    class="filter-btn px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors">
+                    T4: Python
+                </button>
+            </div>
+        </section>
+
+        <!-- Modules Grid -->
+        <section id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Modules will be rendered here by JavaScript -->
+        </section>
+
+    </main>
+
+    <!-- Module Detail Modal -->
+    <div id="module-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div
+            class="glass-panel rounded-3xl max-w-4xl w-full p-8 border border-aec-pink/30 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span id="modal-badge" class="px-3 py-1 rounded-full text-xs font-bold">T0</span>
+                        <span id="modal-difficulty" class="text-yellow-400">⭐ Fácil</span>
+                    </div>
+                    <h2 id="modal-title" class="text-2xl font-bold mb-2">Título do Módulo</h2>
+                    <p id="modal-prerequisite" class="text-sm text-slate-400">📋 Pré-requisito: EP00A</p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div id="modal-description" class="mb-6 text-slate-300 leading-relaxed">
+                <!-- Description -->
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-bold text-slate-400 uppercase mb-3">Tecnologias</h3>
+                <div id="modal-tech" class="flex flex-wrap gap-2">
+                    <!-- Tech badges -->
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-400 uppercase mb-3">Escolha o Nível de Dificuldade</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="startModule('facil')"
+                        class="module-level-btn bg-green-500/20 hover:bg-green-500/30 border-2 border-green-500/50 rounded-xl p-4 text-left transition-all group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-green-400 font-bold">⭐ FÁCIL</span>
+                            <span class="text-green-400 text-2xl font-bold">50 pts</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Conceitos básicos e introdução</p>
+                    </button>
+
+                    <button onclick="startModule('intermediario')"
+                        class="module-level-btn bg-orange-500/20 hover:bg-orange-500/30 border-2 border-orange-500/50 rounded-xl p-4 text-left transition-all group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO</span>
+                            <span class="text-orange-400 text-2xl font-bold">100 pts</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Recursos avançados e integração</p>
+                    </button>
+
+                    <button onclick="startModule('dificil')"
+                        class="module-level-btn bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500/50 rounded-xl p-4 text-left transition-all group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL</span>
+                            <span class="text-red-400 text-2xl font-bold">200 pts</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Desafio completo com IA e backend</p>
+                    </button>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-700 pt-6">
+                <p class="text-xs text-slate-500 text-center">
+                    💡 Cada nível oferece um desafio diferente. Você pode completar múltiplos níveis do mesmo módulo!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/bonus-modules.js"></script>
+    <script>
+        let userProfile = null;
+        let completedModules = new Set();
+        let currentFilter = 'all';
+        let currentModule = null;
+
+        async function init() {
+            const user = await checkAuth();
+            if (!user) return;
+
+            userProfile = await userService.getUserProfile(user.id);
+            document.getElementById('user-nickname').textContent = userProfile.apelido || 'Usuário';
+
+            await loadBonusModules();
+            await loadUserProgress();
+            renderModules();
+            updateStats();
+        }
+
+        async function loadUserProgress() {
+            // Carregar módulos completados do usuário
+            const { data } = await supabaseClient
+                .from('progresso_modulos_bonus')
+                .select('modulo_id, nivel_completado, pontos_ganhos')
+                .eq('usuario_id', userProfile.id);
+
+            if (data) {
+                data.forEach(prog => {
+                    completedModules.add(`${prog.modulo_id}_${prog.nivel_completado}`);
+                });
+            }
+        }
+
+        function filterByTemporada(temporada) {
+            currentFilter = temporada;
+
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-aec-pink', 'text-white');
+                btn.classList.add('bg-slate-800');
+            });
+            event.target.classList.add('active', 'bg-aec-pink', 'text-white');
+            event.target.classList.remove('bg-slate-800');
+
+            renderModules();
+        }
+
+        function renderModules() {
+            const grid = document.getElementById('modules-grid');
+            const modules = window.BONUS_MODULES || [];
+
+            const filtered = currentFilter === 'all'
+                ? modules
+                : modules.filter(m => m.temporada === currentFilter);
+
+            grid.innerHTML = filtered.map(module => createModuleCard(module)).join('');
+        }
+
+        function createModuleCard(module) {
+            const isUnlocked = checkModuleUnlocked(module);
+            const isCompleted = completedModules.has(`${module.id}_facil`) ||
+                completedModules.has(`${module.id}_intermediario`) ||
+                completedModules.has(`${module.id}_dificil`);
+
+            const lockClass = !isUnlocked ? 'module-locked' : '';
+            const completedBadge = isCompleted ? '<div class="absolute top-3 right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-white text-lg">check</span></div>' : '';
+
+            return `
+                <div class="module-card glass-panel rounded-2xl p-6 border border-slate-800 hover:border-${getTemporadaColor(module.temporada)}-500/50 transition-all relative ${lockClass}"
+                     onclick="${isUnlocked ? `openModuleModal(${module.id})` : `showLockedMessage('${module.episodio_prerequisito}')`}">
+                    
+                    ${completedBadge}
+                    
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-${getTemporadaColor(module.temporada)}-500/20 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-${getTemporadaColor(module.temporada)}-400">code</span>
+                        </div>
+                        <span class="px-3 py-1 bg-${getTemporadaColor(module.temporada)}-500/20 text-${getTemporadaColor(module.temporada)}-400 rounded-full text-xs font-bold">
+                            T${module.temporada}: ${getTemporadaNome(module.temporada)}
+                        </span>
+                    </div>
+
+                    <h3 class="text-lg font-bold mb-2 line-clamp-2">${module.nome}</h3>
+                    <p class="text-sm text-slate-400 mb-4 line-clamp-2">${module.descricao}</p>
+
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2 text-slate-500">
+                            <span class="material-symbols-outlined text-sm">book</span>
+                            <span>Pré-req: ${module.episodio_prerequisito}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            ${!isUnlocked ? '<span class="material-symbols-outlined text-slate-500">lock</span>' :
+                    '<span class="text-yellow-400 font-bold">⭐ 50-200 pts</span>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTemporadaColor(t) {
+            const colors = {
+                0: 'green', 1: 'pink', 2: 'blue', 3: 'purple',
+                4: 'yellow', 5: 'red', 6: 'cyan', 7: 'indigo', 8: 'violet'
+            };
+            return colors[t] || 'slate';
+        }
+
+        function getTemporadaNome(t) {
+            const nomes = {
+                0: 'Intro', 1: 'CX', 2: 'IA', 3: 'Data',
+                4: 'Python', 5: 'Skills', 6: 'Tools', 7: 'Projetos', 8: 'Futuro'
+            };
+            return nomes[t] || 'T' + t;
+        }
+
+        function checkModuleUnlocked(module) {
+            // TODO: Verificar se usuário completou episódio pré-requisito
+            // Por enquanto, retorna true para todos
+            return true;
+        }
+
+        function showLockedMessage(episodio) {
+            showToast(`🔒 Complete o episódio ${episodio} primeiro para desbloquear este módulo!`, 'warning');
+        }
+
+        function openModuleModal(moduleId) {
+            const module = window.BONUS_MODULES.find(m => m.id === moduleId);
+            if (!module) return;
+
+            currentModule = module;
+
+            document.getElementById('modal-badge').textContent = `T${module.temporada}`;
+            document.getElementById('modal-badge').className = `px-3 py-1 rounded-full text-xs font-bold bg-${getTemporadaColor(module.temporada)}-500/20 text-${getTemporadaColor(module.temporada)}-400`;
+            document.getElementById('modal-title').textContent = module.nome;
+            document.getElementById('modal-prerequisite').textContent = `📋 Pré-requisito: ${module.episodio_prerequisito}`;
+            document.getElementById('modal-description').textContent = module.descricao;
+
+            // Render tech badges
+            const techHtml = (module.tecnologias || []).map(tech =>
+                `<span class="px-3 py-1 bg-slate-800 rounded-full text-xs">${tech}</span>`
+            ).join('');
+            document.getElementById('modal-tech').innerHTML = techHtml;
+
+            document.getElementById('module-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('module-modal').classList.add('hidden');
+            currentModule = null;
+        }
+
+        function startModule(nivel) {
+            if (!currentModule) return;
+
+            showToast(`🚀 Iniciando módulo "${currentModule.nome}" no nível ${nivel}...`, 'info');
+
+            // TODO: Abrir interface do módulo prático
+            // Por enquanto, apenas fecha o modal
+            setTimeout(() => {
+                closeModal();
+                // Navegar para página do módulo
+                // window.location.href = `/modulos-bonus/${currentModule.codigo}/${nivel}.html`;
+            }, 1500);
+        }
+
+        function updateStats() {
+            const total = window.BONUS_MODULES?.length || 28;
+            const completed = completedModules.size;
+
+            document.getElementById('stat-completed').textContent = `${completed}/${total}`;
+            document.getElementById('stat-points').textContent = '0'; // TODO: calcular pontos reais
+            document.getElementById('stat-seasons').textContent = '0/8'; // TODO: calcular temporadas completas
+            document.getElementById('stat-level').textContent = completed > 0 ? 'Intermediário' : 'Iniciante';
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        init();
+    </script>
+
+    <!-- PWA Install Script -->
+    <script src="/js/pwa-install.js" defer></script>
+</body>
+
+</html>
