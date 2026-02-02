@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construtor de Dashboard | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols_Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .chart-type {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chart-type:hover {
+            transform: scale(1.05);
+        }
+
+        .chart-type.selected {
+            border-color: #ec4899;
+            background: rgba(236, 72, 153, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">📊 Construtor de Dashboard Interativo</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">Crie 2 gráficos básicos</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">4 gráficos + KPIs</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">6 gráficos + análise completa</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Builder Area -->
+        <div id="builder-area" class="hidden">
+            <div class="grid md:grid-cols-4 gap-6 mb-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">📈 Tipos de Gráfico</h3>
+                    <div class="space-y-2">
+                        <div class="chart-type glass-panel rounded-lg p-3 border border-slate-700"
+                            onclick="selectChart('bar')">
+                            <div class="font-bold text-sm">📊 Barras</div>
+                            <div class="text-xs text-slate-400">Comparação</div>
+                        </div>
+                        <div class="chart-type glass-panel rounded-lg p-3 border border-slate-700"
+                            onclick="selectChart('line')">
+                            <div class="font-bold text-sm">📈 Linhas</div>
+                            <div class="text-xs text-slate-400">Tendência</div>
+                        </div>
+                        <div class="chart-type glass-panel rounded-lg p-3 border border-slate-700"
+                            onclick="selectChart('pie')">
+                            <div class="font-bold text-sm">🥧 Pizza</div>
+                            <div class="text-xs text-slate-400">Proporção</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-3 space-y-6">
+                    <div id="kpis-area" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                    <div id="charts-area" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="validate()"
+                    class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg">
+                    ✅ VALIDAR DASHBOARD
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let charts = [];
+        let requiredCharts = 0;
+
+        const mockData = {
+            nps: [8, 7, 9, 8, 9, 10],
+            tickets: [150, 180, 120, 200, 160, 140],
+            fcr: [85, 82, 88, 90, 87, 89],
+            tma: [180, 200, 160, 150, 170, 155],
+            categories: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun']
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            requiredCharts = level === 'facil' ? 2 : level === 'intermediario' ? 4 : 6;
+            charts = [];
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('builder-area').classList.remove('hidden');
+
+            renderKPIs();
+        }
+
+        function renderKPIs() {
+            const kpisArea = document.getElementById('kpis-area');
+            kpisArea.innerHTML = `
+                <div class="glass-panel rounded-xl p-4">
+                    <div class="text-xs text-slate-400 mb-1">NPS Médio</div>
+                    <div class="text-2xl font-bold text-green-400">${(mockData.nps.reduce((a, b) => a + b) / mockData.nps.length).toFixed(1)}</div>
+                </div>
+                <div class="glass-panel rounded-xl p-4">
+                    <div class="text-xs text-slate-400 mb-1">Tickets/mês</div>
+                    <div class="text-2xl font-bold text-blue-400">${Math.round(mockData.tickets.reduce((a, b) => a + b) / mockData.tickets.length)}</div>
+                </div>
+                <div class="glass-panel rounded-xl p-4">
+                    <div class="text-xs text-slate-400 mb-1">FCR Médio</div>
+                    <div class="text-2xl font-bold text-purple-400">${(mockData.fcr.reduce((a, b) => a + b) / mockData.fcr.length).toFixed(0)}%</div>
+                </div>
+                <div class="glass-panel rounded-xl p-4">
+                    <div class="text-xs text-slate-400 mb-1">TMA Médio</div>
+                    <div class="text-2xl font-bold text-orange-400">${Math.round(mockData.tma.reduce((a, b) => a + b) / mockData.tma.length)}s</div>
+                </div>
+            `;
+        }
+
+        function selectChart(type) {
+            if (charts.length >= requiredCharts) {
+                alert(`⚠️ Limite de ${requiredCharts} gráficos atingido!`);
+                return;
+            }
+
+            const chartId = `chart-${charts.length}`;
+            charts.push({ id: chartId, type });
+
+            const chartsArea = document.getElementById('charts-area');
+            const chartDiv = document.createElement('div');
+            chartDiv.className = 'glass-panel rounded-xl p-4';
+            chartDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold text-sm">Gráfico ${charts.length}</h4>
+                    <button onclick="removeChart('${chartId}')" class="text-red-400 hover:text-red-300 text-xs">Remover</button>
+                </div>
+                <canvas id="${chartId}" height="150"></canvas>
+            `;
+            chartsArea.appendChild(chartDiv);
+
+            setTimeout(() => createChart(chartId, type), 100);
+        }
+
+        function createChart(id, type) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+
+            const datasets = type === 'pie' ? {
+                labels: ['Resolvido', 'Em Aberto', 'Escalado'],
+                datasets: [{
+                    data: [65, 25, 10],
+                    backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(251, 191, 36, 0.8)', 'rgba(239, 68, 68, 0.8)']
+                }]
+            } : {
+                labels: mockData.categories,
+                datasets: [{
+                    label: type === 'line' ? 'NPS Tendência' : 'Tickets por Mês',
+                    data: type === 'line' ? mockData.nps : mockData.tickets,
+                    borderColor: 'rgb(147, 51, 234)',
+                    backgroundColor: type === 'line' ? 'rgba(147, 51, 234, 0.1)' : 'rgba(147, 51, 234, 0.8)',
+                    tension: 0.4
+                }]
+            };
+
+            new Chart(ctx, {
+                type: type === 'bar' ? 'bar' : type === 'line' ? 'line' : 'pie',
+                data: datasets,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: type === 'pie' }
+                    }
+                }
+            });
+        }
+
+        function removeChart(chartId) {
+            charts = charts.filter(c => c.id !== chartId);
+            renderCharts();
+        }
+
+        function renderCharts() {
+            const chartsArea = document.getElementById('charts-area');
+            chartsArea.innerHTML = '';
+            charts.forEach(chart => {
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'glass-panel rounded-xl p-4';
+                chartDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-bold text-sm">Gráfico ${charts.indexOf(chart) + 1}</h4>
+                        <button onclick="removeChart('${chart.id}')" class="text-red-400 hover:text-red-300 text-xs">Remover</button>
+                    </div>
+                    <canvas id="${chart.id}" height="150"></canvas>
+                `;
+                chartsArea.appendChild(chartDiv);
+                setTimeout(() => createChart(chart.id, chart.type), 100);
+            });
+        }
+
+        function validate() {
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+
+            if (charts.length >= requiredCharts) {
+                alert(`🎉 Dashboard completo!\n\nVocê criou ${charts.length} visualizações de dados incríveis!\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`⚠️ Dashboard incompleto\n\nCrie pelo menos ${requiredCharts} gráficos (atual: ${charts.length})`);
+            }
+        }
+    </script>
+</body>
+
+</html>

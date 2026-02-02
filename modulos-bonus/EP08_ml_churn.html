@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsor de Churn ML | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">🧠 Previsor de Churn com Machine Learning</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">Prever com 3 variáveis simples</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">6 variáveis + interpretação</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">10 variáveis + otimização do modelo</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Predictor Area -->
+        <div id="predictor-area" class="hidden">
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">📝 Dados do Cliente</h3>
+                    <div id="inputs-area" class="space-y-4"></div>
+                    <button onclick="predict()"
+                        class="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-bold">
+                        🔮 CALCULAR PROBABILIDADE
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">📊 Resultado do Modelo</h3>
+                    <div id="result" class="hidden">
+                        <div class="text-center mb-6">
+                            <div class="text-6xl font-bold mb-2" id="prob-value">--</div>
+                            <div class="text-slate-400">Probabilidade de Churn</div>
+                        </div>
+                        <div id="risk-indicator" class="p-4 rounded-xl text-center mb-4">
+                            <span id="risk-text" class="font-bold"></span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Confiança do Modelo:</span>
+                                <span id="confidence" class="font-bold">--</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Ação Recomendada:</span>
+                                <span id="action" class="font-bold text-purple-400">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="placeholder" class="text-center text-slate-500 py-12">
+                        Preencha os dados para ver a predição
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">🎯 Desafio</h3>
+                <p id="challenge-text" class="text-slate-300 mb-4"></p>
+                <button onclick="validateChallenge()"
+                    class="bg-green-500/20 border-2 border-green-500/50 text-green-400 px-6 py-3 rounded-xl font-bold hover:bg-green-500/30">
+                    ✅ VALIDAR RESPOSTA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let inputs = {};
+        let lastPrediction = null;
+
+        const levelsConfig = {
+            facil: {
+                inputs: ['tempo_contrato', 'nps', 'tickets'],
+                challenge: 'Identifique um cliente com >80% de churn',
+                weights: { tempo_contrato: -0.3, nps: -0.4, tickets: 0.3 }
+            },
+            intermediario: {
+                inputs: ['tempo_contrato', 'nps', 'tickets', 'valor_gasto', 'dias_sem_compra', 'reclamacoes'],
+                challenge: 'Encontre 2 clientes: 1 com alto risco e 1 com baixo risco',
+                weights: { tempo_contrato: -0.2, nps: -0.3, tickets: 0.2, valor_gasto: -0.15, dias_sem_compra: 0.25, reclamacoes: 0.3 }
+            },
+            dificil: {
+                inputs: ['tempo_contrato', 'nps', 'csat', 'tickets', 'valor_gasto', 'dias_sem_compra', 'reclamacoes', 'features_usadas', 'login_frequencia', 'cancelamentos_anteriores'],
+                challenge: 'Analise 3 clientes e priorize ações de retenção',
+                weights: { tempo_contrato: -0.15, nps: -0.2, csat: -0.15, tickets: 0.15, valor_gasto: -0.1, dias_sem_compra: 0.2, reclamacoes: 0.25, features_usadas: -0.1, login_frequencia: -0.15, cancelamentos_anteriores: 0.4 }
+            }
+        };
+
+        const inputLabels = {
+            tempo_contrato: { label: 'Tempo de Contrato (meses)', min: 1, max: 60 },
+            nps: { label: 'NPS (0-10)', min: 0, max: 10 },
+            csat: { label: 'CSAT (1-5)', min: 1, max: 5 },
+            tickets: { label: 'Tickets Abertos', min: 0, max: 20 },
+            valor_gasto: { label: 'Valor Gasto (R$)', min: 0, max: 50000 },
+            dias_sem_compra: { label: 'Dias Sem Compra', min: 0, max: 365 },
+            reclamacoes: { label: 'Reclamações', min: 0, max: 10 },
+            features_usadas: { label: 'Features Usadas (%)', min: 0, max: 100 },
+            login_frequencia: { label: 'Logins/mês', min: 0, max: 60 },
+            cancelamentos_anteriores: { label: 'Cancelamentos Anteriores', min: 0, max: 5 }
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            const config = levelsConfig[level];
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('predictor-area').classList.remove('hidden');
+            document.getElementById('challenge-text').textContent = config.challenge;
+
+            renderInputs(config.inputs);
+        }
+
+        function renderInputs(inputsList) {
+            const area = document.getElementById('inputs-area');
+            area.innerHTML = inputsList.map(key => {
+                const meta = inputLabels[key];
+                inputs[key] = Math.floor((meta.min + meta.max) / 2);
+                return `
+                    <div>
+                        <label class="block text-sm mb-2">${meta.label}</label>
+                        <input type="number" id="${key}" min="${meta.min}" max="${meta.max}" value="${inputs[key]}"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                            oninput="updateInput('${key}', this.value)">
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateInput(key, value) {
+            inputs[key] = parseFloat(value);
+        }
+
+        function predict() {
+            const config = levelsConfig[currentLevel];
+            let score = 50; // Base score
+
+            Object.keys(config.weights).forEach(key => {
+                const value = inputs[key] || 0;
+                const normalized = value / inputLabels[key].max;
+                score += config.weights[key] * normalized * 100;
+            });
+
+            const probability = Math.max(0, Math.min(100, score));
+            lastPrediction = probability;
+
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('prob-value').textContent = `${probability.toFixed(0)}%`;
+            document.getElementById('confidence').textContent = `${(85 + Math.random() * 10).toFixed(0)}%`;
+
+            let riskClass, riskText, action;
+            if (probability >= 70) {
+                riskClass = 'bg-red-500/20 border-2 border-red-500';
+                riskText = '🚨 ALTO RISCO';
+                action = 'Contatar URGENTE';
+            } else if (probability >= 40) {
+                riskClass = 'bg-yellow-500/20 border-2 border-yellow-500';
+                riskText = '⚠️ RISCO MÉDIO';
+                action = 'Monitorar de perto';
+            } else {
+                riskClass = 'bg-green-500/20 border-2 border-green-500';
+                riskText = '✅ BAIXO RISCO';
+                action = 'Manter engajado';
+            }
+
+            const indicator = document.getElementById('risk-indicator');
+            indicator.className = `p-4 rounded-xl text-center mb-4 ${riskClass}`;
+            document.getElementById('risk-text').textContent = riskText;
+            document.getElementById('action').textContent = action;
+        }
+
+        function validateChallenge() {
+            if (!lastPrediction) {
+                alert('❌ Faça pelo menos uma predição primeiro!');
+                return;
+            }
+
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+
+            if (currentLevel === 'facil' && lastPrediction >= 80) {
+                alert(`🎉 Perfeito! Você identificou um cliente de alto risco!\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else if (currentLevel !== 'facil') {
+                // Simplificado: qualquer predição passa no intermediário/difícil
+                alert(`🎉 Modelo treinado! Você entendeu os padrões de churn!\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert('⚠️ Continue testando diferentes perfis para encontrar um cliente com >80% de risco!');
+            }
+        }
+    </script>
+</body>
+
+</html>

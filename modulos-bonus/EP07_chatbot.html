@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot de Atendimento | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .message {
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">🤖 Robô de Atendimento Virtual (Chatbot)</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">Responda 5 perguntas simples</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">10 perguntas + detectar quando transferir</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">15 perguntas complexas + contexto</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div id="chat-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">🤖</div>
+                    <div>
+                        <h3 class="font-bold">Assistente Virtual</h3>
+                        <p class="text-xs text-slate-400">Ajude os clientes com suas dúvidas</p>
+                    </div>
+                    <div class="ml-auto text-sm">
+                        Score: <span id="score" class="text-green-400 font-bold">0</span>/<span id="total">0</span>
+                    </div>
+                </div>
+
+                <div id="messages" class="space-y-3 max-h-96 overflow-y-auto mb-4"></div>
+
+                <div id="options-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let questionIndex = 0;
+        let score = 0;
+        let questions = [];
+
+        const questionsData = {
+            facil: [
+                { q: "Qual o prazo de entrega?", options: ["3-5 dias úteis ✓", "Não sei", "Vou transferir"], correct: 0, type: 'faq' },
+                { q: "Como faço para rastrear meu pedido?", options: ["Use o código no site ✓", "Não temos rastreio", "Transferir"], correct: 0, type: 'faq' },
+                { q: "Vocês aceitam cartão?", options: ["Sim, todos os cartões ✓", "Só dinheiro", "Pergunte ao vendedor"], correct: 0, type: 'faq' },
+                { q: "Qual o horário de funcionamento?", options: ["Seg-Sex 8h-18h ✓", "24h", "Não sei"], correct: 0, type: 'faq' },
+                { q: "Tem desconto para primeira compra?", options: ["Sim, 10% com cupom BEM-VINDO ✓", "Não", "Depende"], correct: 0, type: 'faq' }
+            ],
+            intermediario: [
+                { q: "Qual o prazo de entrega para SP?", options: ["2-3 dias úteis ✓", "1 semana", "Não sei"], correct: 0, type: 'faq' },
+                { q: "Posso trocar sem nota fiscal?", options: ["Não, nota é obrigatória ✓", "Sim", "Depende"], correct: 0, type: 'faq' },
+                { q: "Meu produto veio com defeito, o que faço?", options: ["Transferir para atendente humano ✓", "Nada a fazer", "Compre outro"], correct: 0, type: 'complex' },
+                { q: "Vocês têm loja física?", options: ["Sim, veja endereços no site ✓", "Não", "Só online"], correct: 0, type: 'faq' },
+                { q: "Como cancelar meu pedido?", options: ["Transferir para cancelamentos ✓", "Não pode cancelar", "Espere chegar"], correct: 0, type: 'complex' },
+                { q: "Qual a política de devolução?", options: ["7 dias após recebimento ✓", "Não aceitamos", "30 dias"], correct: 0, type: 'faq' },
+                { q: "Fui cobrado 2x, o que fazer?", options: ["Transferir para financeiro ✓", "Problema seu", "Aguarde"], correct: 0, type: 'complex' },
+                { q: "Produto disponível em estoque?", options: ["Sim, pronta entrega ✓", "Acabou", "Não sei"], correct: 0, type: 'faq' },
+                { q: "Como alterar endereço de entrega?", options: ["Transferir para logística ✓", "Não é possível", "Recompre"], correct: 0, type: 'complex' },
+                { q: "Vocês entregam no interior?", options: ["Sim, todo Brasil ✓", "Só capitais", "Não"], correct: 0, type: 'faq' }
+            ],
+            dificil: [
+                { q: "Preciso de nota fiscal paulista, como proceder?", options: ["Transferir para fiscal ✓", "Não fornecemos", "Busque no site"], correct: 0, type: 'complex' },
+                { q: "Meu pedido está atrasado há 15 dias", options: ["Transferir para logística + urgência ✓", "Aguarde mais", "Recompre"], correct: 0, type: 'complex' },
+                { q: "Qual a diferença entre os modelos X e Y?", options: ["Consultar ficha técnica ✓", "São iguais", "Não sei"], correct: 0, type: 'faq' },
+                { q: "Vocês fazem vendas para empresas (B2B)?", options: ["Transferir para vendas corporativas ✓", "Não", "Só varejo"], correct: 0, type: 'complex' },
+                { q: "Como emitir segunda via do boleto?", options: ["Acesse Meus Pedidos > Boleto ✓", "Não é possível", "Ligue"], correct: 0, type: 'faq' },
+                { q: "Recebi produto errado e já usei", options: ["Transferir para SAC com urgência ✓", "Azar", "Devolva"], correct: 0, type: 'complex' },
+                { q: "Prazo entrega para exterior?", options: ["Transferir para internacional ✓", "Não enviamos", "15 dias"], correct: 0, type: 'complex' },
+                { q: "Como funciona o programa de fidelidade?", options: ["Acumule pontos a cada R$ 100 ✓", "Não temos", "Só para VIP"], correct: 0, type: 'faq' },
+                { q: "Produto com garantia vencida, posso trocar?", options: ["Transferir para pós-venda ✓", "Não", "Recompre"], correct: 0, type: 'complex' },
+                { q: "Como ser um revendedor?", options: ["Transferir para parcerias ✓", "Não aceitamos", "Compre 100 unid"], correct: 0, type: 'complex' },
+                { q: "Qual o prazo para estorno?", options: ["5-10 dias úteis ✓", "Imediato", "Não fazemos"], correct: 0, type: 'faq' },
+                { q: "Produto vem montado ou desmontado?", options: ["Veja descrição do produto ✓", "Montado", "Desmontado"], correct: 0, type: 'faq' },
+                { q: "Houve fraude no meu CPF", options: ["Transferir URGENTE para segurança ✓", "Problema seu", "Mude senha"], correct: 0, type: 'complex' },
+                { q: "Como parcelar em mais vezes?", options: ["Máximo 12x no cartão ✓", "Só à vista", "Negocie"], correct: 0, type: 'faq' },
+                { q: "Vocês têm programa de afiliados?", options: ["Sim, veja em /afiliados ✓", "Não", "Só influencers"], correct: 0, type: 'faq' }
+            ]
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            questions = [...questionsData[level]];
+            questionIndex = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('chat-area').classList.remove('hidden');
+            document.getElementById('total').textContent = questions.length;
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (questionIndex >= questions.length) {
+                finish();
+                return;
+            }
+
+            const q = questions[questionIndex];
+            const messages = document.getElementById('messages');
+
+            messages.innerHTML += `
+                <div class="message flex gap-3">
+                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-sm">👤</div>
+                    <div class="flex-1 bg-purple-500/20 rounded-lg p-3">${q.q}</div>
+                </div>
+            `;
+
+            const optionsArea = document.getElementById('options-area');
+            optionsArea.innerHTML = `
+                <div class="space-y-2">
+                    ${q.options.map((opt, i) => `
+                        <button onclick="answer(${i})" class="w-full text-left bg-slate-800 hover:bg-slate-700 rounded-lg p-3 transition-all">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function answer(choice) {
+            const q = questions[questionIndex];
+            const correct = choice === q.correct;
+
+            if (correct) score++;
+
+            const messages = document.getElementById('messages');
+            const response = q.options[choice];
+
+            messages.innerHTML += `
+                <div class="message flex gap-3 justify-end">
+                    <div class="flex-1 bg-blue-500/20 rounded-lg p-3 text-right">${response}</div>
+                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-sm">🤖</div>
+                </div>
+            `;
+
+            if (correct) {
+                messages.innerHTML += `<div class="text-center text-green-400 text-sm">✅ Resposta correta!</div>`;
+            } else {
+                messages.innerHTML += `<div class="text-center text-red-400 text-sm">❌ Melhor opção: ${q.options[q.correct]}</div>`;
+            }
+
+            document.getElementById('score').textContent = score;
+            document.getElementById('options-area').innerHTML = '';
+
+            questionIndex++;
+            setTimeout(showQuestion, 1500);
+        }
+
+        function finish() {
+            const percent = (score / questions.length * 100).toFixed(0);
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+
+            if (percent >= 70) {
+                alert(`🎉 Chatbot treinado com sucesso!\n\n${score}/${questions.length} corretas (${percent}%)\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 Desempenho: ${percent}%\n\nPrecisa de 70% para passar. Continue treinando!`);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

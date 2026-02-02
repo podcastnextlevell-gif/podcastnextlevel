@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Teste A/B | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols_Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">🧪 Calculadora Estatística de Teste A/B</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">Interprete 2 testes simples</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">4 testes + calcular significância</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">6 testes + interpretar p-value</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Area -->
+        <div id="test-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">Teste <span id="test-num">1</span>/<span id="total-tests">2</span>
+                    </h3>
+                    <div class="text-sm">Score: <span id="score" class="font-bold text-purple-400">0</span></div>
+                </div>
+
+                <div id="test-scenario" class="mb-6"></div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                        <h4 class="font-bold mb-3 text-blue-400">Versão A (Controle)</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Visitantes:</span>
+                                <span id="a-visitors" class="font-bold">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Conversões:</span>
+                                <span id="a-conversions" class="font-bold">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxa:</span>
+                                <span id="a-rate" class="font-bold text-blue-400">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+                        <h4 class="font-bold mb-3 text-green-400">Versão B (Variante)</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Visitantes:</span>
+                                <span id="b-visitors" class="font-bold">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Conversões:</span>
+                                <span id="b-conversions" class="font-bold">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Taxa:</span>
+                                <span id="b-rate" class="font-bold text-green-400">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                        <div class="flex justify-between">
+                            <span>Melhoria:</span>
+                            <span id="improvement" class="font-bold">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>P-value:</span>
+                            <span id="p-value" class="font-bold">-</span>
+                        </div>
+                    </div>
+
+                    <div id="question-area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let testIndex = 0;
+        let score = 0;
+        let tests = [];
+
+        const testsData = {
+            facil: [
+                {
+                    scenario: "Teste de novo botão de checkout",
+                    a: { visitors: 1000, conversions: 120 },
+                    b: { visitors: 1000, conversions: 180 },
+                    pvalue: 0.001,
+                    question: "A versão B é estatisticamente melhor?",
+                    options: ["Sim, p < 0.05 ✓", "Não, diferença não significante", "Precisa mais dados"],
+                    correct: 0
+                },
+                {
+                    scenario: "Teste de nova cor do CTA",
+                    a: { visitors: 500, conversions: 50 },
+                    b: { visitors: 500, conversions: 48 },
+                    pvalue: 0.78,
+                    question: "Qual decisão tomar?",
+                    options: ["Manter versão A ✓", "Mudar para B", "Continuar testando"],
+                    correct: 0
+                }
+            ],
+            intermediario: [
+                {
+                    scenario: "Teste de headline no email marketing",
+                    a: { visitors: 5000, conversions: 450 },
+                    b: { visitors: 5000, conversions: 520 },
+                    pvalue: 0.02,
+                    question: "Resultado do teste?",
+                    options: ["B vence (p < 0.05) ✓", "Empate", "Inconclusivo"],
+                    correct: 0
+                },
+                {
+                    scenario: "Formulário com menos campos",
+                    a: { visitors: 2000, conversions: 200 },
+                    b: { visitors: 2000, conversions: 280 },
+                    pvalue: 0.001,
+                    question: "Qual a melhoria percentual?",
+                    options: ["40% ✓", "28%", "80%"],
+                    correct: 0
+                },
+                {
+                    scenario: "Mudança no layout do produto",
+                    a: { visitors: 800, conversions: 80 },
+                    b: { visitors: 800, conversions: 82 },
+                    pvalue: 0.65,
+                    question: "Decisão estatística correta?",
+                    options: ["Não há diferença significante ✓", "B é melhor", "Testar mais"],
+                    correct: 0
+                },
+                {
+                    scenario: "Novo fluxo de onboarding",
+                    a: { visitors: 3000, conversions: 1500 },
+                    b: { visitors: 3000, conversions: 1650 },
+                    pvalue: 0.03,
+                    question: "O teste foi bem-sucedido?",
+                    options: ["Sim, implementar B ✓", "Não, manter A", "Refazer teste"],
+                    correct: 0
+                }
+            ],
+            dificil: [
+                {
+                    scenario: "Redesign completo da homepage",
+                    a: { visitors: 10000, conversions: 1200 },
+                    b: { visitors: 10000, conversions: 1380 },
+                    pvalue: 0.01,
+                    question: "Interpretação do p-value 0.01?",
+                    options: ["99% confiança na diferença ✓", "1% de chance de funcionar", "Inconclusivo"],
+                    correct: 0
+                },
+                {
+                    scenario: "Chatbot vs sem chatbot",
+                    a: { visitors: 5000, conversions: 400 },
+                    b: { visitors: 5000, conversions: 500 },
+                    pvalue: 0.001,
+                    question: "Qual o lift (melhoria)?",
+                    options: ["25% ✓", "20%", "100%"],
+                    correct: 0
+                },
+                {
+                    scenario: "Prova social no checkout",
+                    a: { visitors: 1500, conversions: 150 },
+                    b: { visitors: 1500, conversions: 155 },
+                    pvalue: 0.52,
+                    question: "Com p-value 0.52, você deve:",
+                    options: ["Manter A (não significante) ✓", "Implementar B", "Testar por mais tempo"],
+                    correct: 0
+                },
+                {
+                    scenario: "Email personalizado vs genérico",
+                    a: { visitors: 8000, conversions: 800 },
+                    b: { visitors: 8000, conversions: 1040 },
+                    pvalue: 0.001,
+                    question: "Qual a confiança estatística?",
+                    options: ["99.9% ✓", "90%", "50%"],
+                    correct: 0
+                },
+                {
+                    scenario: "Pop-up de desconto",
+                    a: { visitors: 3500, conversions: 280 },
+                    b: { visitors: 3500, conversions: 285 },
+                    pvalue: 0.75,
+                    question: "Ação recomendada?",
+                    options: ["Não implementar (p > 0.05) ✓", "Implementar B", "Aumentar amostra"],
+                    correct: 0
+                },
+                {
+                    scenario: "Vídeo vs imagem estática",
+                    a: { visitors: 6000, conversions: 600 },
+                    b: { visitors: 6000, conversions: 720 },
+                    pvalue: 0.02,
+                    question: "Interpretação correta?",
+                    options: ["B tem 20% mais conversões (significante) ✓", "Empate técnico", "A é melhor"],
+                    correct: 0
+                }
+            ]
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            tests = [...testsData[level]];
+            testIndex = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('test-area').classList.remove('hidden');
+            document.getElementById('total-tests').textContent = tests.length;
+
+            showTest();
+        }
+
+        function showTest() {
+            if (testIndex >= tests.length) {
+                finish();
+                return;
+            }
+
+            const test = tests[testIndex];
+            document.getElementById('test-num').textContent = testIndex + 1;
+            document.getElementById('test-scenario').innerHTML = `
+                <h4 class="font-bold text-lg mb-2">📊 ${test.scenario}</h4>
+                <p class="text-sm text-slate-400">Analise os resultados e responda a pergunta</p>
+            `;
+
+            const rateA = (test.a.conversions / test.a.visitors * 100).toFixed(2);
+            const rateB = (test.b.conversions / test.b.visitors * 100).toFixed(2);
+            const improvement = ((rateB - rateA) / rateA * 100).toFixed(1);
+
+            document.getElementById('a-visitors').textContent = test.a.visitors;
+            document.getElementById('a-conversions').textContent = test.a.conversions;
+            document.getElementById('a-rate').textContent = `${rateA}%`;
+
+            document.getElementById('b-visitors').textContent = test.b.visitors;
+            document.getElementById('b-conversions').textContent = test.b.conversions;
+            document.getElementById('b-rate').textContent = `${rateB}%`;
+
+            document.getElementById('improvement').textContent = `${improvement}%`;
+            document.getElementById('p-value').textContent = test.pvalue;
+
+            const questionArea = document.getElementById('question-area');
+            questionArea.innerHTML = `
+                <p class="font-bold mb-3">${test.question}</p>
+                <div class="space-y-2">
+                    ${test.options.map((opt, i) => `
+                        <button onclick="answer(${i})" class="w-full text-left bg-slate-800 hover:bg-slate-700 rounded-lg p-3 transition-all text-sm">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function answer(choice) {
+            const test = tests[testIndex];
+            const correct = choice === test.correct;
+
+            if (correct) {
+                score++;
+                showNotification('✅ Correto!', 'text-green-400');
+            } else {
+                showNotification(`❌ Errado! Resposta: ${test.options[test.correct]}`, 'text-red-400');
+            }
+
+            document.getElementById('score').textContent = score;
+            testIndex++;
+            setTimeout(showTest, 1500);
+        }
+
+        function showNotification(msg, colorClass) {
+            const notif = document.createElement('div');
+            notif.className = `fixed top-4 right-4 glass-panel rounded-xl px-6 py-4 ${colorClass} font-bold shadow-lg z-50`;
+            notif.textContent = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 1500);
+        }
+
+        function finish() {
+            const percent = (score / tests.length * 100).toFixed(0);
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+
+            if (percent >= 70) {
+                alert(`🎉 Estatística dominada! ${score}/${tests.length} corretas (${percent}%)\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 ${percent}% de acerto. Precisa de 70% para passar!`);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

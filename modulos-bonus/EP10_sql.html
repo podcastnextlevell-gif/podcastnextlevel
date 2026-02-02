@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor SQL Interativo | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols_Outlined" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Voltar
+            </a>
+            <h1 class="text-3xl font-bold">🗄️ Editor SQL Interativo para Call Center</h1>
+        </div>
+
+        <!-- Level Selection -->
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <p class="text-sm mt-2">3 queries SELECT básicas</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <p class="text-sm mt-2">5 queries com JOIN e GROUP BY</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <p class="text-sm mt-2">8 queries complexas + subqueries</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- SQL Editor -->
+        <div id="sql-area" class="hidden">
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">📋 Desafio <span id="challenge-num">1</span>/<span
+                            id="total-challenges">3</span></h3>
+                    <p id="challenge-text" class="text-slate-300 mb-4"></p>
+
+                    <label class="block text-sm font-medium mb-2">Sua Query:</label>
+                    <textarea id="sql-input"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg p-4 font-mono text-sm h-32 text-green-400"
+                        placeholder="SELECT * FROM ..."></textarea>
+
+                    <button onclick="executeQuery()"
+                        class="w-full mt-4 bg-blue-500/20 border-2 border-blue-500/50 text-blue-400 py-3 rounded-xl font-bold hover:bg-blue-500/30">
+                        ▶️ EXECUTAR QUERY
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold mb-4">📊 Resultado</h3>
+                    <div id="result-area" class="bg-slate-900/50 rounded-lg p-4 overflow-x-auto max-h-80">
+                        <p class="text-slate-500 text-center py-8">Execute uma query para ver resultados</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">🗂️ Estrutura das Tabelas</h3>
+                <div class="grid md:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-slate-900/50 rounded-lg p-3">
+                        <h4 class="font-bold mb-2 text-purple-400">atendimentos</h4>
+                        <code class="block text-slate-400">
+                            id, cliente_id, agente_id,<br>
+                            data, duracao, nps, resolvido
+                        </code>
+                    </div>
+                    <div class="bg-slate-900/50 rounded-lg p-3">
+                        <h4 class="font-bold mb-2 text-green-400">clientes</h4>
+                        <code class="block text-slate-400">
+                            id, nome, cidade, idade
+                        </code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let challengeIndex = 0;
+        let score = 0;
+        let challenges = [];
+
+        const challengesData = {
+            facil: [
+                { q: "Liste TODOS os atendimentos", answer: "SELECT * FROM atendimentos", keywords: ['select', '*', 'atendimentos'] },
+                { q: "Mostre apenas clientes de São Paulo", answer: "SELECT * FROM clientes WHERE cidade = 'São Paulo'", keywords: ['select', 'clientes', 'where', 'cidade'] },
+                { q: "Conte quantos atendimentos foram resolvidos", answer: "SELECT COUNT(*) FROM atendimentos WHERE resolvido = 1", keywords: ['count', 'atendimentos', 'where', 'resolvido'] }
+            ],
+            intermediario: [
+                { q: "Mostre nome dos clientes e NPS dos seus atendimentos", answer: "SELECT c.nome, a.nps FROM clientes c JOIN atendimentos a ON c.id = a.cliente_id", keywords: ['join', 'clientes', 'atendimentos'] },
+                { q: "Calcule o NPS médio por cidade", answer: "SELECT cidade, AVG(a.nps) FROM clientes c JOIN atendimentos a ON c.id = a.cliente_id GROUP BY cidade", keywords: ['avg', 'group by', 'join'] },
+                { q: "Conte atendimentos por agente", answer: "SELECT agente_id, COUNT(*) FROM atendimentos GROUP BY agente_id", keywords: ['count', 'group by', 'agente'] },
+                { q: "Mostre duração média de atendimentos resolvidos", answer: "SELECT AVG(duracao) FROM atendimentos WHERE resolvido = 1", keywords: ['avg', 'duracao', 'where', 'resolvido'] },
+                { q: "Liste clientes com idade acima de 30", answer: "SELECT nome FROM clientes WHERE idade > 30", keywords: ['select', 'where', 'idade', '>'] }
+            ],
+            dificil: [
+                { q: "Clientes que tiveram mais de 3 atendimentos", answer: "SELECT cliente_id FROM atendimentos GROUP BY cliente_id HAVING COUNT(*) > 3", keywords: ['group by', 'having', 'count'] },
+                { q: "NPS médio por agente apenas de atendimentos resolvidos", answer: "SELECT agente_id, AVG(nps) FROM atendimentos WHERE resolvido = 1 GROUP BY agente_id", keywords: ['avg', 'where', 'group by'] },
+                { q: "Clientes de SP com NPS abaixo de 7", answer: "SELECT DISTINCT c.nome FROM clientes c JOIN atendimentos a ON c.id = a.cliente_id WHERE c.cidade = 'São Paulo' AND a.nps < 7", keywords: ['join', 'where', 'and', '<'] },
+                { q: "Total de atendimentos por cidade ordenado decrescente", answer: "SELECT c.cidade, COUNT(*) FROM clientes c JOIN atendimentos a ON c.id = a.cliente_id GROUP BY c.cidade ORDER BY COUNT(*) DESC", keywords: ['count', 'group by', 'order by', 'desc'] },
+                { q: "Agentes com NPS médio acima de 8", answer: "SELECT agente_id FROM atendimentos GROUP BY agente_id HAVING AVG(nps) > 8", keywords: ['avg', 'group by', 'having', '>'] },
+                { q: "Clientes sem atendimentos", answer: "SELECT nome FROM clientes WHERE id NOT IN (SELECT cliente_id FROM atendimentos)", keywords: ['not in', 'subquery', 'select'] },
+                { q: "Duração total de atendimentos por dia", answer: "SELECT data, SUM(duracao) FROM atendimentos GROUP BY data", keywords: ['sum', 'group by', 'data'] },
+                { q: "Top 3 cidades com mais atendimentos", answer: "SELECT c.cidade, COUNT(*) FROM clientes c JOIN atendimentos a ON c.id = a.cliente_id GROUP BY c.cidade ORDER BY COUNT(*) DESC LIMIT 3", keywords: ['count', 'order by', 'limit', 'join'] }
+            ]
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            challenges = [...challengesData[level]];
+            challengeIndex = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('sql-area').classList.remove('hidden');
+            document.getElementById('total-challenges').textContent = challenges.length;
+
+            showChallenge();
+        }
+
+        function showChallenge() {
+            if (challengeIndex >= challenges.length) {
+                finish();
+                return;
+            }
+
+            document.getElementById('challenge-num').textContent = challengeIndex + 1;
+            document.getElementById('challenge-text').textContent = challenges[challengeIndex].q;
+            document.getElementById('sql-input').value = '';
+            document.getElementById('result-area').innerHTML = '<p class="text-slate-500 text-center py-8">Execute uma query para ver resultados</p>';
+        }
+
+        function executeQuery() {
+            const query = document.getElementById('sql-input').value.trim().toLowerCase();
+            const challenge = challenges[challengeIndex];
+
+            const hasAllKeywords = challenge.keywords.every(kw => query.includes(kw));
+
+            const resultArea = document.getElementById('result-area');
+
+            if (hasAllKeywords) {
+                score++;
+                resultArea.innerHTML = `
+                    <div class="text-green-400">
+                        <div class="font-bold mb-2">✅ Query correta!</div>
+                        <div class="text-sm text-slate-400">Resultado simulado exibido com sucesso</div>
+                        <div class="mt-4 bg-green-500/10 border border-green-500/30 rounded p-3">
+                            <code class="text-xs">${challenge.answer}</code>
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => {
+                    challengeIndex++;
+                    showChallenge();
+                }, 2000);
+            } else {
+                resultArea.innerHTML = `
+                    <div class="text-red-400">
+                        <div class="font-bold mb-2">❌ Query incorreta</div>
+                        <div class="text-sm text-slate-400">Dica: Use ${challenge.keywords.slice(0, 2).join(', ')}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function finish() {
+            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+            const percent = (score / challenges.length * 100).toFixed(0);
+
+            if (percent >= 80) {
+                alert(`🎉 SQL dominado! ${score}/${challenges.length} queries corretas!\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 ${percent}% de acerto. Precisa de 80% para passar. Tente novamente!`);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>
