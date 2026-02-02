@@ -51,16 +51,16 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button onclick="startLevel('facil')"
                     class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
-                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
                     <p class="text-sm mt-2">Crie 2 gráficos básicos</p>
                 </button>
                 <button onclick="startLevel('intermediario')"
                     class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
-                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
                     <p class="text-sm mt-2">4 gráficos + KPIs</p>
                 </button>
                 <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
-                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
                     <p class="text-sm mt-2">6 gráficos + análise completa</p>
                 </button>
             </div>
@@ -233,7 +233,7 @@
         }
 
         function validate() {
-            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+            const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 200;
 
             if (charts.length >= requiredCharts) {
                 alert(`🎉 Dashboard completo!\n\nVocê criou ${charts.length} visualizações de dados incríveis!\n\n+${points} pontos!`);

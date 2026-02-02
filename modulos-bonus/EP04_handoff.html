@@ -52,16 +52,16 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button onclick="startLevel('facil')"
                     class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
-                    <span class="text-green-400 font-bold">⭐ FÁCIL (50 pts)</span>
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
                     <p class="text-sm mt-2">Gerencie 1 transferência simples</p>
                 </button>
                 <button onclick="startLevel('intermediario')"
                     class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
-                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (100 pts)</span>
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
                     <p class="text-sm mt-2">2 transferências + contexto</p>
                 </button>
                 <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
-                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (200 pts)</span>
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
                     <p class="text-sm mt-2">Múltiplas transferências + omnichannel</p>
                 </button>
             </div>
@@ -225,7 +225,7 @@
         function finish() {
             const maxScore = scenario.steps.filter(s => s.type === 'choice').reduce((acc, s) => acc + Math.max(...s.options.map(o => o.points)), 0);
             const percent = (score / maxScore * 100).toFixed(0);
-            const points = currentLevel === 'facil' ? 50 : currentLevel === 'intermediario' ? 100 : 200;
+            const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 200;
 
             if (percent >= 80) {
                 alert(`🎉 Handoff perfeito! ${percent}% de acerto.\n\n+${points} pontos!`);

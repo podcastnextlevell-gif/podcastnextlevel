@@ -11,7 +11,7 @@ window.BONUS_MODULES = [
         temporada: 0,
         episodio_prerequisito: 'EP00A',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Chart.js'],
-        pontos: { facil: 50, intermediario: 100, dificil: 150 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 2,
@@ -21,7 +21,7 @@ window.BONUS_MODULES = [
         temporada: 0,
         episodio_prerequisito: 'EP00B',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'SortableJS'],
-        pontos: { facil: 50, intermediario: 100, dificil: 150 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
 
     // TEMPORADA 1: CX Avançado
@@ -33,7 +33,7 @@ window.BONUS_MODULES = [
         temporada: 1,
         episodio_prerequisito: 'EP01',
         tecnologias: ['HTML', 'CSS', 'JavaScript'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 4,
@@ -43,7 +43,7 @@ window.BONUS_MODULES = [
         temporada: 1,
         episodio_prerequisito: 'EP02',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'NLTK'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 5,
@@ -53,7 +53,7 @@ window.BONUS_MODULES = [
         temporada: 1,
         episodio_prerequisito: 'EP03',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Plotly.js'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 6,
@@ -63,7 +63,7 @@ window.BONUS_MODULES = [
         temporada: 1,
         episodio_prerequisito: 'EP04',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'SQLite'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 7,
@@ -73,7 +73,7 @@ window.BONUS_MODULES = [
         temporada: 1,
         episodio_prerequisito: 'EP05',
         tecnologias: ['HTML', 'CSS', 'JavaScript'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 8,
@@ -83,7 +83,7 @@ window.BONUS_MODULES = [
         temporada: 1,
         episodio_prerequisito: 'EP06',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'Scikit-learn'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
 
     // TEMPORADA 2: IA Aplicada
@@ -95,7 +95,7 @@ window.BONUS_MODULES = [
         temporada: 2,
         episodio_prerequisito: 'EP07',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'NLTK'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 10,
@@ -105,7 +105,7 @@ window.BONUS_MODULES = [
         temporada: 2,
         episodio_prerequisito: 'EP08',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'TensorFlow'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 11,
@@ -115,7 +115,7 @@ window.BONUS_MODULES = [
         temporada: 2,
         episodio_prerequisito: 'EP09',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'LightFM'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
 
     // TEMPORADA 3: Fundamentos Data-Driven
@@ -127,7 +127,7 @@ window.BONUS_MODULES = [
         temporada: 3,
         episodio_prerequisito: 'EP10',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'SQLite'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 13,
@@ -137,7 +137,7 @@ window.BONUS_MODULES = [
         temporada: 3,
         episodio_prerequisito: 'EP11',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'SciPy'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 14,
@@ -147,7 +147,7 @@ window.BONUS_MODULES = [
         temporada: 3,
         episodio_prerequisito: 'EP12',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Chart.js'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
 
     // TEMPORADA 4: Python para Qualidade
@@ -159,7 +159,7 @@ window.BONUS_MODULES = [
         temporada: 4,
         episodio_prerequisito: 'EP13',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'ReportLab'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 16,
@@ -169,7 +169,7 @@ window.BONUS_MODULES = [
         temporada: 4,
         episodio_prerequisito: 'EP14',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'BeautifulSoup'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 17,
@@ -179,7 +179,7 @@ window.BONUS_MODULES = [
         temporada: 4,
         episodio_prerequisito: 'EP15',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'spaCy'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
 
     // TEMPORADA 5: Soft Skills do Futuro
@@ -191,7 +191,7 @@ window.BONUS_MODULES = [
         temporada: 5,
         episodio_prerequisito: 'EP16',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'NLTK'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 19,
@@ -201,7 +201,7 @@ window.BONUS_MODULES = [
         temporada: 5,
         episodio_prerequisito: 'EP17',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Chart.js'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 20,
@@ -211,7 +211,7 @@ window.BONUS_MODULES = [
         temporada: 5,
         episodio_prerequisito: 'EP18',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
 
     // TEMPORADA 6: Ferramentas Avançadas
@@ -223,7 +223,7 @@ window.BONUS_MODULES = [
         temporada: 6,
         episodio_prerequisito: 'EP19',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Plotly.js'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 22,
@@ -233,7 +233,7 @@ window.BONUS_MODULES = [
         temporada: 6,
         episodio_prerequisito: 'EP20',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'React Flow'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
     {
         id: 23,
@@ -243,7 +243,7 @@ window.BONUS_MODULES = [
         temporada: 6,
         episodio_prerequisito: 'EP21',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'Flask'],
-        pontos: { facil: 50, intermediario: 100, dificil: 200 }
+        pontos: { facil: 5, intermediario: 10, dificil: 20 }
     },
 
     // TEMPORADA 7: Projetos Práticos
@@ -255,7 +255,7 @@ window.BONUS_MODULES = [
         temporada: 7,
         episodio_prerequisito: 'EP22',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'Flask', 'Scikit-learn'],
-        pontos: { facil: 100, intermediario: 200, dificil: 300 }
+        pontos: { facil: 10, intermediario: 20, dificil: 30 }
     },
     {
         id: 25,
@@ -265,7 +265,7 @@ window.BONUS_MODULES = [
         temporada: 7,
         episodio_prerequisito: 'EP23',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'D3.js'],
-        pontos: { facil: 100, intermediario: 200, dificil: 300 }
+        pontos: { facil: 10, intermediario: 20, dificil: 30 }
     },
     {
         id: 26,
@@ -275,7 +275,7 @@ window.BONUS_MODULES = [
         temporada: 7,
         episodio_prerequisito: 'EP24',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Python', 'spaCy'],
-        pontos: { facil: 100, intermediario: 200, dificil: 300 }
+        pontos: { facil: 10, intermediario: 20, dificil: 30 }
     },
 
     // TEMPORADA 8: Futuro da Qualidade
@@ -287,7 +287,7 @@ window.BONUS_MODULES = [
         temporada: 8,
         episodio_prerequisito: 'EP25',
         tecnologias: ['HTML', 'CSS', 'JavaScript', 'Three.js'],
-        pontos: { facil: 100, intermediario: 200, dificil: 300 }
+        pontos: { facil: 10, intermediario: 20, dificil: 30 }
     },
     {
         id: 28,
@@ -297,7 +297,7 @@ window.BONUS_MODULES = [
         temporada: 8,
         episodio_prerequisito: 'EP26',
         tecnologias: ['HTML', 'CSS', ' JavaScript', 'AR.js'],
-        pontos: { facil: 100, intermediario: 200, dificil: 300 }
+        pontos: { facil: 10, intermediario: 20, dificil: 30 }
     }
 ];
 
