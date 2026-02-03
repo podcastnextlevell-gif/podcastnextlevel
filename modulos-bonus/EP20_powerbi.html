@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Básico | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">←
+                Voltar</a>
+            <h1 class="text-3xl font-bold">📊 Power BI: Dashboards Interativos</h1>
+        </div>
+
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
+                    <p class="text-sm mt-2">1 dashboard simples</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
+                    <p class="text-sm mt-2">2 dashboards + filtros</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
+                    <p class="text-sm mt-2">3 dashboards + drill-down</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="bi-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">Dashboard <span id="dash-num">1</span>/<span id="dash-total">1</span>
+                </h3>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <canvas id="chart1"></canvas>
+                    <canvas id="chart2"></canvas>
+                </div>
+                <button onclick="nextDashboard()"
+                    class="w-full bg-green-500/20 border-2 border-green-500/50 text-green-400 py-3 rounded-xl font-bold">
+                    ✅ PRÓXIMO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let dashIndex = 0;
+
+        const dashboards = { facil: 1, intermediario: 2, dificil: 3 };
+
+        function startLevel(level) {
+            currentLevel = level;
+            dashIndex = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('bi-area').classList.remove('hidden');
+            document.getElementById('dash-total').textContent = dashboards[level];
+
+            showDashboard();
+        }
+
+        function showDashboard() {
+            document.getElementById('dash-num').textContent = dashIndex + 1;
+
+            new Chart(document.getElementById('chart1'), {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar'],
+                    datasets: [{ label: 'NPS', data: [8, 9, 7], backgroundColor: 'rgba(34, 197, 94, 0.8)' }]
+                }
+            });
+
+            new Chart(document.getElementById('chart2'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar'],
+                    datasets: [{ label: 'Tickets', data: [150, 180, 160], borderColor: 'rgb(59, 130, 246)', backgroundColor: 'rgba(59, 130, 246, 0.1)' }]
+                }
+            });
+        }
+
+        function nextDashboard() {
+            dashIndex++;
+
+            if (dashIndex >= dashboards[currentLevel]) {
+                const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
+                alert(`🎉 Dashboards criados!\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                showDashboard();
+            }
+        }
+    </script>
+</body>
+
+</html>

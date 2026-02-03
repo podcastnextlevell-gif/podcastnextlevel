@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolução de Conflitos | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">←
+                Voltar</a>
+            <h1 class="text-3xl font-bold">⚖️ Mediação e Resolução de Conflitos</h1>
+        </div>
+
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
+                    <p class="text-sm mt-2">3 conflitos leves</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
+                    <p class="text-sm mt-2">6 conflitos moderados</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
+                    <p class="text-sm mt-2">10 conflitos graves</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="conflict-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">Conflito <span id="conf-num">1</span>/<span id="conf-total">3</span>
+                </h3>
+                <div id="conflict-scenario" class="bg-slate-900/50 rounded-lg p-6 mb-6"></div>
+                <div id="resolution-options" class="space-y-3"></div>
+                <div class="mt-4 text-center">Score: <span id="score"
+                        class="text-2xl font-bold text-yellow-400">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let conflicts = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        const conflictsData = {
+            facil: [
+                { text: 'Dois clientes querem falar com mesmo agente', options: ['Atender quem chegou primeiro ✓', 'Sortear', 'Mandar os dois embora'], correct: 0 },
+                { text: 'Colega usa sua caneta sem pedir', options: ['Conversar educadamente ✓', 'Brigar', 'Ignorar'], correct: 0 },
+                { text: 'Desentendimento sobre horário de pausa', options: ['Propor rodízio justo ✓', 'Cada um por si', 'Reclamar com chefe'], correct: 0 }
+            ],
+            intermediario: [
+                { text: 'Equipe dividida sobre mudança de processo', options: ['Ouvir ambos lados e encontrar meio-termo ✓', 'Impor uma decisão', 'Deixar como está'], correct: 0 },
+                { text: 'Cliente insatisfeito culpa atendente', options: ['Investigar fatos e mediar conversa ✓', 'Defender atendente', 'Culpar cliente'], correct: 0 },
+                { text: 'Disputa sobre crédito de venda', options: ['Revisar registros e dividir comissão se necessário ✓', 'Dar para quem reclamou mais', 'Cancelar comissão'], correct: 0 },
+                { text: 'Conflito de horários entre setores', options: ['Reunião com todos para alinhar necessidades ✓', 'Decidir sozinho', 'Manter conflito'], correct: 0 },
+                { text: 'Fofoca causando clima ruim', options: ['Conversa particular com envolvidos ✓', 'Ignorar', 'Fazer advertência pública'], correct: 0 },
+                { text: 'Reclamação de favoritismo na escala', options: ['Tornar critérios transparentes e objetivos ✓', 'Negar favoritismo', 'Mudar tudo aleatoriamente'], correct: 0 }
+            ],
+            dificil: Array(10).fill(0).map((_, i) => ({
+                text: `Conflito grave ${i + 1}: Situação de alto risco interpessoal`,
+                options: ['Abordagem evitativa', 'Mediação estruturada com foco em solução ✓', 'Confronto direto'],
+                correct: 1
+            }))
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            conflicts = conflictsData[level];
+            currentIndex = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('conflict-area').classList.remove('hidden');
+            document.getElementById('conf-total').textContent = conflicts.length;
+
+            showConflict();
+        }
+
+        function showConflict() {
+            if (currentIndex >= conflicts.length) {
+                finish();
+                return;
+            }
+
+            const conf = conflicts[currentIndex];
+            document.getElementById('conf-num').textContent = currentIndex + 1;
+            document.getElementById('conflict-scenario').textContent = conf.text;
+            document.getElementById('resolution-options').innerHTML = conf.options.map((opt, i) => `
+                <button onclick="resolve(${i})" class="w-full text-left bg-slate-800 hover:bg-slate-700 rounded-lg p-4 transition-all">
+                    ${opt}
+                </button>
+            `).join('');
+        }
+
+        function resolve(index) {
+            const conf = conflicts[currentIndex];
+            if (index === conf.correct) score++;
+
+            document.getElementById('score').textContent = score;
+            currentIndex++;
+            setTimeout(showConflict, 500);
+        }
+
+        function finish() {
+            const percent = (score / conflicts.length * 100).toFixed(0);
+            const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
+
+            if (percent >= 70) {
+                alert(`🎉 Mediação de conflitos dominada! ${score}/${conflicts.length} (${percent}%)\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 ${percent}% de acerto. Precisa de 70%!`);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Negociação | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">←
+                Voltar</a>
+            <h1 class="text-3xl font-bold">🤝 Simulador de Negociação Ganha-Ganha</h1>
+        </div>
+
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
+                    <p class="text-sm mt-2">2 negociações simples</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
+                    <p class="text-sm mt-2">4 negociações complexas</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
+                    <p class="text-sm mt-2">6 negociações estratégicas</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="neg-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6">
+                <div id="negotiation-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let negIndex = 0;
+        let score = 0;
+
+        const negotiations = {
+            facil: [
+                { scenario: 'Cliente quer desconto de 20%', target: 10, options: [5, 10, 15, 20] },
+                { scenario: 'Fornecedor aumenta preço 15%', target: 5, options: [0, 5, 10, 15] }
+            ],
+            intermediario: [
+                { scenario: 'Negociar prazo de entrega', target: 15, options: [7, 15, 30, 60] },
+                { scenario: 'Desconto em volume grande', target: 12, options: [8, 12, 18, 25] },
+                { scenario: 'Retenção de cliente insatisfeito', target: 20, options: [10, 20, 30, 50] },
+                { scenario: 'Salário inicial na contratação', target: 5000, options: [4000, 5000, 6000, 7000] }
+            ],
+            dificil: Array(6).fill(0).map((_, i) => ({
+                scenario: `Negociação estratégica ${i + 1}`,
+                target: Math.floor(Math.random() * 50),
+                options: Array(4).fill(0).map(() => Math.floor(Math.random() * 100))
+            }))
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            negIndex = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('neg-area').classList.remove('hidden');
+
+            showNegotiation();
+        }
+
+        function showNegotiation() {
+            const negs = negotiations[currentLevel];
+            if (negIndex >= negs.length) {
+                finish();
+                return;
+            }
+
+            const neg = negs[negIndex];
+            document.getElementById('negotiation-content').innerHTML = `
+                <h3 class="text-lg font-bold mb-4">Negociação ${negIndex + 1}/${negs.length}</h3>
+                <p class="mb-6">${neg.scenario}</p>
+                <p class="text-sm text-slate-400 mb-4">Escolha a melhor opção (meta: ${neg.target}${typeof neg.target === 'number' && neg.target < 100 ? '%' : ''})</p>
+                <div class="grid grid-cols-2 gap-4">
+                    ${neg.options.map((opt, i) => `
+                        <button onclick="negotiate(${i})" class="bg-slate-800 hover:bg-slate-700 rounded-lg p-4 font-bold">
+                            ${opt}${typeof opt === 'number' && opt < 100 ? '%' : ''}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="mt-4 text-center">Score: <span class="text-2xl font-bold text-green-400">${score}</span></div>
+            `;
+        }
+
+        function negotiate(index) {
+            const neg = negotiations[currentLevel][negIndex];
+            if (neg.options[index] === neg.target) score++;
+
+            negIndex++;
+            setTimeout(showNegotiation, 500);
+        }
+
+        function finish() {
+            const total = negotiations[currentLevel].length;
+            const percent = (score / total * 100).toFixed(0);
+            const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
+
+            if (percent >= 70) {
+                alert(`🎉 Negociações concluídas! ${score}/${total} (${percent}%)\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 ${percent}% de acerto. Precisa de 70%!`);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

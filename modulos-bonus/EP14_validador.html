@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Dados | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">←
+                Voltar</a>
+            <h1 class="text-3xl font-bold">🔍 Validador de Qualidade de Dados Python</h1>
+        </div>
+
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
+                    <p class="text-sm mt-2">Valide 5 registros simples</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
+                    <p class="text-sm mt-2">10 registros + regras complexas</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
+                    <p class="text-sm mt-2">20 registros + validação cruzada</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="validator-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">📋 Registros para Validação (<span id="record-count">0</span>/<span
+                        id="total-records">0</span>)</h3>
+                <div id="current-record" class="bg-slate-900/50 rounded-lg p-6 mb-4"></div>
+                <div id="validation-options" class="grid grid-cols-2 gap-4"></div>
+                <div class="mt-4 text-center">Score: <span id="score" class="text-2xl font-bold text-green-400">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let records = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        const recordsData = {
+            facil: [
+                { email: 'joao@email', valid: false, reason: 'Email inválido' },
+                { cpf: '123.456.789-00', valid: true },
+                { telefone: '11-9999-9999', valid: false, reason: 'Formato incorreto' },
+                { nps: '15', valid: false, reason: 'NPS deve ser 0-10' },
+                { nome: 'Ana', valid: true }
+            ],
+            intermediario: [
+                { email: 'maria@company.com', valid: true },
+                { cpf: '000.000.000-00', valid: false, reason: 'CPF inválido' },
+                { data_nascimento: '2025-01-01', valid: false, reason: 'Data futura' },
+                { salario: '-1000', valid: false, reason: 'Valor negativo' },
+                { cep: '12345', valid: false, reason: 'CEP incompleto' },
+                { idade: '200', valid: false, reason: 'Idade irreal' },
+                { nps: '8', valid: true },
+                { duracao_chamada: '0', valid: false, reason: 'Duração zero' },
+                { email: 'teste@teste.com.br', valid: true },
+                { telefone: '(11) 98765-4321', valid: true }
+            ],
+            dificil: Array(20).fill(0).map((_, i) => ({
+                field: `Campo ${i + 1}`,
+                value: Math.random() > 0.5 ? 'Válido' : 'Inválido',
+                valid: Math.random() > 0.5
+            }))
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            records = recordsData[level];
+            currentIndex = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('validator-area').classList.remove('hidden');
+            document.getElementById('total-records').textContent = records.length;
+
+            showRecord();
+        }
+
+        function showRecord() {
+            if (currentIndex >= records.length) {
+                finish();
+                return;
+            }
+
+            const record = records[currentIndex];
+            document.getElementById('record-count').textContent = currentIndex + 1;
+            document.getElementById('current-record').innerHTML = `
+                <div class="text-lg mb-2">${Object.keys(record).filter(k => !['valid', 'reason'].includes(k)).map(k =>
+                `<span class="font-bold">${k}:</span> ${record[k]}`
+            ).join('<br>')}</div>
+            `;
+
+            document.getElementById('validation-options').innerHTML = `
+                <button onclick="validate(true)" class="bg-green-500/20 border-2 border-green-500/50 text-green-400 py-4 rounded-xl font-bold hover:bg-green-500/30">
+                    ✅ VÁLIDO
+                </button>
+                <button onclick="validate(false)" class="bg-red-500/20 border-2 border-red-500/50 text-red-400 py-4 rounded-xl font-bold hover:bg-red-500/30">
+                    ❌ INVÁLIDO
+                </button>
+            `;
+        }
+
+        function validate(isValid) {
+            const record = records[currentIndex];
+            if (isValid === record.valid) score++;
+
+            document.getElementById('score').textContent = score;
+            currentIndex++;
+            setTimeout(showRecord, 500);
+        }
+
+        function finish() {
+            const percent = (score / records.length * 100).toFixed(0);
+            const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
+
+            if (percent >= 70) {
+                alert(`🎉 Validação concluída! ${score}/${records.length} corretas (${percent}%)\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                alert(`📊 ${percent}% de acerto. Precisa de 70% para passar!`);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

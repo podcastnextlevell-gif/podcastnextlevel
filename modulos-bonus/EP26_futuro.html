@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tendências Quality 2030 | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">←
+                Voltar</a>
+            <h1 class="text-3xl font-bold">🔮 Tendências do Futuro da Qualidade (2030)</h1>
+        </div>
+
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
+                    <p class="text-sm mt-2">Explore 3 tendências</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
+                    <p class="text-sm mt-2">6 tendências + impactos</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
+                    <p class="text-sm mt-2">10 tendências + roadmap</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="trends-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">Tendência <span id="trend-num">1</span>/<span
+                        id="trend-total">3</span></h3>
+                <div id="trend-content" class="bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-lg p-6">
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm mb-2">Como se preparar?</label>
+                    <textarea id="preparation"
+                        class="w-full bg-slate-900 border border-slate-700 rounded p-3 h-24"></textarea>
+                </div>
+                <button onclick="nextTrend()"
+                    class="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 rounded-xl font-bold">
+                    PRÓXIMA TENDÊNCIA →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let trendIndex = 0;
+
+        const trends = {
+            facil: 3,
+            intermediario: 6,
+            dificil: 10
+        };
+
+        const trendsList = [
+            { title: 'Quality 100% Automatizado', desc: 'IA monitora e analisa 100% dos atendimentos em tempo real' },
+            { title: 'Análise Emocional Profunda', desc: 'Micro-expressões faciais e tom de voz interpretados por IA' },
+            { title: 'Realidade Virtual no Treinamento', desc: 'Simulações imersivas de atendimento em VR/AR' },
+            { title: 'Predição de Problemas', desc: 'IA antecipa insatisfação antes do cliente reclamar' },
+            { title: 'Assistentes IA Personalizados', desc: 'Cada agente tem um co-piloto IA adaptado ao seu estilo' },
+            { title: 'Blockchain para Auditoria', desc: 'Registros imutáveis de qualidade e compliance' },
+            { title: 'Quantum Computing', desc: 'Análise instantânea de bilhões de padrões de atendimento' },
+            { title: 'Brain-Computer Interface', desc: 'Feedback neurológico direto de clientes' },
+            { title: 'Agentes Holográficos', desc: 'Atendimento via hologramas hiper-realistas' },
+            { title: 'Quality as a Service (QaaS)', desc: 'Plataformas globais de quality compartilhado' }
+        ];
+
+        function startLevel(level) {
+            currentLevel = level;
+            trendIndex = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('trends-area').classList.remove('hidden');
+            document.getElementById('trend-total').textContent = trends[level];
+
+            showTrend();
+        }
+
+        function showTrend() {
+            const trend = trendsList[trendIndex];
+            document.getElementById('trend-num').textContent = trendIndex + 1;
+            document.getElementById('trend-content').innerHTML = `
+                <h4 class="font-bold text-2xl mb-3">${trend.title}</h4>
+                <p class="text-slate-300">${trend.desc}</p>
+            `;
+        }
+
+        function nextTrend() {
+            trendIndex++;
+
+            if (trendIndex >= trends[currentLevel]) {
+                const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
+                alert(`🎉 Visão de futuro desenvolvida!\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+            } else {
+                showTrend();
+            }
+        }
+    </script>
+</body>
+
+</html>

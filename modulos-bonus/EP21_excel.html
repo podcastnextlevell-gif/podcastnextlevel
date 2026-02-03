@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Avançado | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-8">
+            <a href="../bonus.html" class="text-slate-400 hover:text-white text-sm flex items-center gap-2 mb-4">←
+                Voltar</a>
+            <h1 class="text-3xl font-bold">📈 Excel Avançado: Fórmulas e Tabelas Dinâmicas</h1>
+        </div>
+
+        <div id="level-selection" class="glass-panel rounded-2xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button onclick="startLevel('facil')"
+                    class="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-6">
+                    <span class="text-green-400 font-bold">⭐ FÁCIL (5 pts)</span>
+                    <p class="text-sm mt-2">3 fórmulas básicas</p>
+                </button>
+                <button onclick="startLevel('intermediario')"
+                    class="bg-orange-500/20 border-2 border-orange-500/50 rounded-xl p-6">
+                    <span class="text-orange-400 font-bold">⭐⭐ INTERMEDIÁRIO (10 pts)</span>
+                    <p class="text-sm mt-2">6 fórmulas + PROCV</p>
+                </button>
+                <button onclick="startLevel('dificil')" class="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-6">
+                    <span class="text-red-400 font-bold">⭐⭐⭐ DIFÍCIL (20 pts)</span>
+                    <p class="text-sm mt-2">10 fórmulas + Tabelas Dinâmicas</p>
+                </button>
+            </div>
+        </div>
+
+        <div id="excel-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4">Fórmula <span id="formula-num">1</span>/<span
+                        id="formula-total">3</span></h3>
+                <div id="formula-challenge" class="bg-slate-900/50 rounded-lg p-6 mb-4"></div>
+                <div id="formula-options" class="space-y-3"></div>
+                <div class="mt-4 text-center">Score: <span id="score" class="font-bold text-green-400">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = null;
+        let formulaIndex = 0;
+        let score = 0;
+
+        const formulas = {
+            facil: [
+                { q: 'Somar células A1 até A10', opts: ['=SUM(A1:A10) ✓', '=ADD(A1:A10)', '=TOTAL(A1:A10)'], correct: 0 },
+                { q: 'Média de B1 até B5', opts: ['=AVERAGE(B1:B5) ✓', '=MEAN(B1:B5)', '=AVG(B1:B5)'], correct: 0 },
+                { q: 'Contar células não vazias C1:C20', opts: ['=COUNTA(C1:C20) ✓', '=COUNT(C1:C20)', '=COUNTIF(C1:C20)'], correct: 0 }
+            ],
+            intermediario: [
+                { q: 'SE valor em A1 > 10, retornar "Alto", senão "Baixo"', opts: ['=IF(A1>10,"Alto","Baixo") ✓', '=SE(A1>10;Alto;Baixo)', '=IFS(A1>10,"Alto")'], correct: 0 },
+                { q: 'PROCV buscar valor em A1 na tabela B:C', opts: ['=VLOOKUP(A1,B:C,2,0) ✓', '=PROCV(A1;B:C;2;0)', '=LOOKUP(A1,B:C)'], correct: 0 },
+                { q: 'Contar quantas células em D1:D50 contêm "Sim"', opts: ['=COUNTIF(D1:D50,"Sim") ✓', '=COUNT(D1:D50,"Sim")', '=COUNTA(D1:D50)'], correct: 0 },
+                { q: 'Somar apenas valores > 100 em E1:E30', opts: ['=SUMIF(E1:E30,">100") ✓', '=SUM(E1:E30>100)', '=SUMIFS(E1:E30,">100")'], correct: 0 },
+                { q: 'Concatenar texto de F1 e G1', opts: ['=CONCATENATE(F1,G1) ✓', '=CONCAT(F1&G1)', '=JOIN(F1,G1)'], correct: 0 },
+                { q: 'Extrair 5 primeiros caracteres de H1', opts: ['=LEFT(H1,5) ✓', '=MID(H1,1,5)', '=SUBSTRING(H1,5)'], correct: 0 }
+            ],
+            dificil: Array(10).fill(0).map((_, i) => ({
+                q: `Fórmula avançada ${i + 1}: Combinação complexa`,
+                opts: ['=FORMULA_CORRETA() ✓', '=FORMULA_ERRADA1()', '=FORMULA_ERRADA2()'],
+                correct: 0
+            }))
+        };
+
+        function startLevel(level) {
+            currentLevel = level;
+            formulaIndex = 0;
+            score = 0;
+
+            document.getElementById('level-selection').classList.add('hidden');
+            document.getElementById('excel-area').classList.remove('hidden');
+            document.getElementById('formula-total').textContent = formulas[level].length;
+
+            showFormula();
+        }
+
+        function showFormula() {
+            const items = formulas[currentLevel];
+            if (formulaIndex >= items.length) {
+                const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
+                alert(`🎉 Excel dominado! ${score}/${items.length} corretas\n\n+${points} pontos!`);
+                window.location.href = '../bonus.html';
+                return;
+            }
+
+            const formula = items[formulaIndex];
+            document.getElementById('formula-num').textContent = formulaIndex + 1;
+            document.getElementById('formula-challenge').textContent = formula.q;
+            document.getElementById('formula-options').innerHTML = formula.opts.map((opt, i) => `
+                <button onclick="answer(${i})" class="w-full text-left bg-slate-800 hover:bg-slate-700 rounded-lg p-3 font-mono text-sm">
+                    ${opt}
+                </button>
+            `).join('');
+        }
+
+        function answer(index) {
+            if (index === formulas[currentLevel][formulaIndex].correct) score++;
+            document.getElementById('score').textContent = score;
+            formulaIndex++;
+            setTimeout(showFormula, 500);
+        }
+    </script>
+</body>
+
+</html>
