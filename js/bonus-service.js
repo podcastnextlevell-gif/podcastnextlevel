@@ -12,7 +12,7 @@ const BonusService = {
     async completarModulo(moduloCodigo, nivel) {
         try {
             // 1. Buscar módulo no banco
-            const { data: modulo, error: moduloError } = await supabase
+            const { data: modulo, error: moduloError } = await supabaseClient
                 .from('modulos_bonus')
                 .select('*')
                 .eq('codigo', moduloCodigo)
@@ -28,7 +28,7 @@ const BonusService = {
             }
 
             // 2. Pegar user atual
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) {
                 return {
                     success: false,
@@ -38,7 +38,7 @@ const BonusService = {
             }
 
             // 3. Buscar ID do usuário na tabela usuarios
-            const { data: usuario, error: usuarioError } = await supabase
+            const { data: usuario, error: usuarioError } = await supabaseClient
                 .from('usuarios')
                 .select('id')
                 .eq('auth_id', user.id)
@@ -62,7 +62,7 @@ const BonusService = {
             const pontosGanhos = pontosMap[nivel] || 0;
 
             // 5. Inserir progresso (trigger automático atualiza pontuacao_total)
-            const { data: progresso, error: progressoError } = await supabase
+            const { data: progresso, error: progressoError } = await supabaseClient
                 .from('progresso_modulos_bonus')
                 .insert({
                     usuario_id: usuario.id,
@@ -114,10 +114,10 @@ const BonusService = {
      */
     async getProgressoUsuario() {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) return [];
 
-            const { data: usuario } = await supabase
+            const { data: usuario } = await supabaseClient
                 .from('usuarios')
                 .select('id')
                 .eq('auth_id', user.id)
@@ -125,7 +125,7 @@ const BonusService = {
 
             if (!usuario) return [];
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('progresso_modulos_bonus')
                 .select(`
                     *,
@@ -213,3 +213,4 @@ const BonusService = {
 
 // Exportar globalmente
 window.BonusService = BonusService;
+
