@@ -42,6 +42,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/bonus-service.js"></script>
+    <script src="../js/bonus-save.js"></script>
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen p-8">
@@ -211,8 +212,7 @@
             const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 200;
 
             if (script.length >= requiredCount && hasPico && hasFim) {
-                alert(`🎉 Script perfeito! Pico e Fim bem aplicados!\n\nNível emocional: ${avgEmotion.toFixed(1)}/10\n\n+${points} pontos!`);
-                window.location.href = '../bonus.html';
+                salvarPontuacaoModulo('EP05_CHURN', currentLevel);;
             } else {
                 let message = '⚠️ Script incompleto:\n\n';
                 if (script.length < requiredCount) message += `❌ Faltam blocos (${script.length}/${requiredCount})\n`;

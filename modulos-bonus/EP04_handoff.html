@@ -39,6 +39,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/bonus-service.js"></script>
+    <script src="../js/bonus-save.js"></script>
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen p-8">
@@ -232,8 +233,7 @@
             const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 200;
 
             if (percent >= 80) {
-                alert(`🎉 Handoff perfeito! ${percent}% de acerto.\n\n+${points} pontos!`);
-                window.location.href = '../bonus.html';
+                salvarPontuacaoModulo('EP04_CES', currentLevel);;
             } else {
                 alert(`📊 Você fez ${percent}% dos handoffs corretamente.\n\nPrecisa de 80% para passar. Tente novamente!`);
                 window.location.reload();

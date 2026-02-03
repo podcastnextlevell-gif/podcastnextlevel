@@ -39,6 +39,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/bonus-service.js"></script>
+    <script src="../js/bonus-save.js"></script>
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen p-8">
@@ -214,8 +215,7 @@
             const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 200;
 
             if (percent >= 70) {
-                alert(`🎉 Chatbot treinado com sucesso!\n\n${score}/${questions.length} corretas (${percent}%)\n\n+${points} pontos!`);
-                window.location.href = '../bonus.html';
+                salvarPontuacaoModulo('EP07_CHATBOT', currentLevel);;
             } else {
                 alert(`📊 Desempenho: ${percent}%\n\nPrecisa de 70% para passar. Continue treinando!`);
                 window.location.reload();

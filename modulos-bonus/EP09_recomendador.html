@@ -36,6 +36,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/bonus-service.js"></script>
+    <script src="../js/bonus-save.js"></script>
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen p-8">
@@ -255,8 +256,7 @@
             const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 200;
 
             if (totalInteractions >= minInteractions && hasRecommendations) {
-                alert(`🎉 Sistema de recomendação configurado!\n\nVocê interagiu com ${totalInteractions} produtos e recebeu ${recommendations.length} recomendações personalizadas!\n\n+${points} pontos!`);
-                window.location.href = '../bonus.html';
+                salvarPontuacaoModulo('EP09_RECOMENDADOR', currentLevel);;
             } else {
                 alert(`⚠️ Complete o desafio:\n\n✓ Interagir com ${minInteractions}+ produtos (atual: ${totalInteractions})\n✓ Gerar recomendações`);
             }

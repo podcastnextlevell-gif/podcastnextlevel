@@ -22,6 +22,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/bonus-service.js"></script>
+    <script src="../js/bonus-save.js"></script>
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen p-8">
@@ -104,8 +105,7 @@
             const items = formulas[currentLevel];
             if (formulaIndex >= items.length) {
                 const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
-                alert(`🎉 Excel dominado! ${score}/${items.length} corretas\n\n+${points} pontos!`);
-                window.location.href = '../bonus.html';
+                salvarPontuacaoModulo('EP21_API', currentLevel);;
                 return;
             }
 

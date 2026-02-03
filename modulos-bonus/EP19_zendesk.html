@@ -22,6 +22,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/bonus-service.js"></script>
+    <script src="../js/bonus-save.js"></script>
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen p-8">
@@ -117,8 +118,7 @@
 
             if (macroIndex >= macros[currentLevel]) {
                 const points = currentLevel === 'facil' ? 5 : currentLevel === 'intermediario' ? 10 : 20;
-                alert(`🎉 Todas as macros criadas!\n\n+${points} pontos!`);
-                window.location.href = '../bonus.html';
+                salvarPontuacaoModulo('EP19_POWERBI', currentLevel);;
             } else {
                 showMacroBuilder();
             }
