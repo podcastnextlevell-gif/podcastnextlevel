@@ -308,6 +308,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/bonus-service.js"></script>
@@ -606,14 +607,18 @@
         }
 
         async function updateStats() {
-            // Buscar estatísticas reais do banco
-            const stats = await BonusService.getEstatisticas();
+            try {
+                // Buscar estatísticas reais do banco
+                const stats = await BonusService.getEstatisticas();
+                console.log('📊 Estatísticas carregadas:', stats);
 
-            document.getElementById('stat-completed').textContent = stats.completados;
-            document.getElementById('stat-total').textContent = 28;
-            document.getElementById('stat-points').textContent = stats.pontos;
-            document.getElementById('stat-seasons').textContent = `${stats.temporadas}/8`;
-            document.getElementById('stat-level').textContent = stats.nivelMedio;
+                document.getElementById('stat-completed').textContent = `${stats.completados}/28`;
+                document.getElementById('stat-points').textContent = stats.pontos;
+                document.getElementById('stat-seasons').textContent = `${stats.temporadas}/8`;
+                document.getElementById('stat-level').textContent = stats.nivelMedio;
+            } catch (error) {
+                console.error('❌ Erro ao carregar estatísticas:', error);
+            }
         }
 
         async function logout() {
