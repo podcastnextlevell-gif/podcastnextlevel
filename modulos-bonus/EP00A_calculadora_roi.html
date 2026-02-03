@@ -234,36 +234,24 @@
             });
         }
 
-        async async function completarModulo() {
+        async function completarModulo() {
             const btn = event.target;
             btn.disabled = true;
             btn.textContent = '⏳ Salvando...';
 
             try {
                 const resultado = await BonusService.completarModulo('EP00A_ROI', 'facil');
+                alert(resultado.message);
 
                 if (resultado.success) {
-                    alert(resultado.message);
                     window.location.href = '../bonus.html';
                 } else {
-                    alert(resultado.message);
                     btn.disabled = false;
                     btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                alert('❌ Erro ao salvar progresso. Tente novamente.');
-                btn.disabled = false;
-                btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
-            }
-        } else {
-                    alert(resultado.message);
-                    btn.disabled = false;
-                    btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('❌ Erro ao salvar progresso. Tente novamente.');
+                alert('❌ Erro ao salvar progresso: ' + error.message);
                 btn.disabled = false;
                 btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
             }
