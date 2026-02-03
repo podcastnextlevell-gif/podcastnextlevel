@@ -247,3 +247,78 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 });
 
 console.log('🔐 Módulo de autenticação carregado!');
+
+// ============================================
+// Funções Auxiliares de Perfil e Auth
+// ============================================
+
+/**
+ * Verifica sessão ativa e redireciona se necessário
+ */
+async function checkAuth() {
+    console.log('🔒 Verificando autenticação...');
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+    if (error || !session) {
+        console.warn('⚠️ Usuário não autenticado. Redirecionando...');
+        sessionStorage.setItem('redirectUrl', window.location.href);
+        window.location.href = 'index.html';
+        return null;
+    }
+
+    return session.user;
+}
+
+/**
+ * Busca perfil completo do usuário
+ * @param {string} [userId] - Opcional, pega do auth atual se não informado
+ */
+async function getUserProfile(userId) {
+    let uid = userId;
+
+    if (!uid) {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return null;
+        uid = user.id;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('usuarios')
+        .select('*')
+        .eq('auth_id', uid)
+        .single();
+
+    if (error) {
+        console.error('Erro ao buscar perfil:', error);
+        return null;
+    }
+
+    return data;
+}
+
+async function redirectByRole() {
+    const profile = await getUserProfile();
+    if (profile && profile.is_admin) {
+        window.location.href = 'admin-dashboard.html';
+    } else {
+        window.location.href = 'dashboard.html';
+    }
+}
+
+// Exportar globais para compatibilidade com outros scripts
+window.checkAuth = checkAuth;
+window.getUserProfile = getUserProfile;
+
+// Objeto userService para compatibilidade com bonus.html
+window.userService = {
+    getUserProfile: getUserProfile
+};
+
+function showLoading(show) {
+    // Implementação básica se não existir
+    const loader = document.getElementById('loading');
+    if (loader) {
+        if (show) loader.classList.remove('hidden');
+        else loader.classList.add('hidden');
+    }
+}
