@@ -9,6 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/bonus-service.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -131,11 +134,10 @@
             <canvas id="roiChart" height="80"></canvas>
         </div>
 
-        <!-- Complete Button -->
         <div class="mt-8 text-center">
             <button onclick="completarModulo()"
                 class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-green-500/50 transition-all hover:scale-105">
-                ✅ CONCLUIR MÓDULO (+50 PONTOS)
+                ✅ CONCLUIR MÓDULO (+5 PONTOS)
             </button>
         </div>
     </div>
@@ -231,10 +233,39 @@
             });
         }
 
-        function completarModulo() {
-            alert('🎉 Parabéns! Módulo concluído!\n\n+50 pontos adicionados ao seu perfil!');
-            // TODO: Salvar conclusão no Supabase
-            window.location.href = '../bonus.html';
+        async async function completarModulo() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Salvando...';
+
+            try {
+                const resultado = await BonusService.completarModulo('EP00A_ROI', 'facil');
+
+                if (resultado.success) {
+                    alert(resultado.message);
+                    window.location.href = '../bonus.html';
+                } else {
+                    alert(resultado.message);
+                    btn.disabled = false;
+                    btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('❌ Erro ao salvar progresso. Tente novamente.');
+                btn.disabled = false;
+                btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
+            }
+        } else {
+                    alert(resultado.message);
+                    btn.disabled = false;
+                    btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('❌ Erro ao salvar progresso. Tente novamente.');
+                btn.disabled = false;
+                btn.textContent = '✅ CONCLUIR MÓDULO (+5 PONTOS)';
+            }
         }
 
         // Inicializar

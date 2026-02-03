@@ -310,6 +310,7 @@
 
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/bonus-service.js"></script>
     <script src="js/bonus-modules.js"></script>
     <script>
         let userProfile = null;
@@ -335,17 +336,15 @@
         }
 
         async function loadUserProgress() {
-            // Carregar módulos completados do usuário
-            const { data } = await supabaseClient
-                .from('progresso_modulos_bonus')
-                .select('modulo_id, nivel_completado, pontos_ganhos')
-                .eq('usuario_id', userProfile.id);
+            // Carregar módulos completados do banco
+            const progresso = await BonusService.getProgressoUsuario();
 
-            if (data) {
-                data.forEach(prog => {
-                    completedModules.add(`${prog.modulo_id}_${prog.nivel_completado}`);
-                });
-            }
+            completedModules.clear();
+            progresso.forEach(p => {
+                // Formato: moduloId_nivel (ex: "EP00A_ROI_facil")
+                const key = `${p.modulos_bonus.codigo}_${p.nivel}`;
+                completedModules.add(key);
+            });
         }
 
         function filterByTemporada(temporada) {
@@ -390,9 +389,9 @@
 
         function createModuleCard(module) {
             const isUnlocked = checkModuleUnlocked(module);
-            const isCompleted = completedModules.has(`${module.id}_facil`) ||
-                completedModules.has(`${module.id}_intermediario`) ||
-                completedModules.has(`${module.id}_dificil`);
+            const isCompleted = completedModules.has(`${module.codigo}_facil`) ||
+                completedModules.has(`${module.codigo}_intermediario`) ||
+                completedModules.has(`${module.codigo}_dificil`);
 
             const lockClass = !isUnlocked ? 'module-locked' : '';
             const completedBadge = isCompleted ? '<div class="absolute top-3 right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-white text-lg">check</span></div>' : '';
@@ -606,14 +605,15 @@
             console.log('Usuário interessado no módulo:', moduleCodigo);
         }
 
-        function updateStats() {
-            const total = window.BONUS_MODULES?.length || 28;
-            const completed = completedModules.size;
+        async function updateStats() {
+            // Buscar estatísticas reais do banco
+            const stats = await BonusService.getEstatisticas();
 
-            document.getElementById('stat-completed').textContent = `${completed}/${total}`;
-            document.getElementById('stat-points').textContent = '0'; // TODO: calcular pontos reais
-            document.getElementById('stat-seasons').textContent = '0/8'; // TODO: calcular temporadas completas
-            document.getElementById('stat-level').textContent = completed > 0 ? 'Intermediário' : 'Iniciante';
+            document.getElementById('stat-completed').textContent = stats.completados;
+            document.getElementById('stat-total').textContent = 28;
+            document.getElementById('stat-points').textContent = stats.pontos;
+            document.getElementById('stat-seasons').textContent = `${stats.temporadas}/8`;
+            document.getElementById('stat-level').textContent = stats.nivelMedio;
         }
 
         async function logout() {
