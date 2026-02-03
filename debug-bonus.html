@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Sistema Bônus</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/bonus-service.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #0f0;
+        }
+
+        button {
+            background: #0f0;
+            color: #000;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #111;
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        .error {
+            color: #f00;
+        }
+
+        .success {
+            color: #0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 DEBUG - Sistema Bônus</h1>
+
+    <div class="section">
+        <h2>1. Testar BonusService</h2>
+        <button onclick="testarCompletarModulo()">Completar EP00A_ROI (Fácil)</button>
+        <button onclick="testarGetProgresso()">Buscar Progresso</button>
+        <button onclick="testarEstatisticas()">Buscar Estatísticas</button>
+        <pre id="resultado-teste"></pre>
+    </div>
+
+    <div class="section">
+        <h2>2. Verificar Banco de Dados</h2>
+        <button onclick="verificarModulos()">Ver Módulos no Banco</button>
+        <button onclick="verificarProgresso()">Ver Progresso no Banco</button>
+        <button onclick="verificarPontuacao()">Ver Pontuação do Usuário</button>
+        <pre id="resultado-db"></pre>
+    </div>
+
+    <div class="section">
+        <h2>3. Console de Erros</h2>
+        <p>Abra o DevTools (F12) e veja a aba Console para erros JS</p>
+    </div>
+
+    <script>
+        async function log(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.textContent = JSON.stringify(message, null, 2);
+            console.log(message);
+        }
+
+        async function testarCompletarModulo() {
+            try {
+                const resultado = await BonusService.completarModulo('EP00A_ROI', 'facil');
+                log('resultado-teste', resultado);
+                alert(resultado.message);
+            } catch (error) {
+                log('resultado-teste', { error: error.message, stack: error.stack });
+            }
+        }
+
+        async function testarGetProgresso() {
+            try {
+                const progresso = await BonusService.getProgressoUsuario();
+                log('resultado-teste', progresso);
+            } catch (error) {
+                log('resultado-teste', { error: error.message });
+            }
+        }
+
+        async function testarEstatisticas() {
+            try {
+                const stats = await BonusService.getEstatisticas();
+                log('resultado-teste', stats);
+            } catch (error) {
+                log('resultado-teste', { error: error.message });
+            }
+        }
+
+        async function verificarModulos() {
+            try {
+                const { data, error } = await supabase
+                    .from('modulos_bonus')
+                    .select('*')
+                    .limit(5);
+
+                log('resultado-db', { count: data?.length, data, error });
+            } catch (error) {
+                log('resultado-db', { error: error.message });
+            }
+        }
+
+        async function verificarProgresso() {
+            try {
+                const { data: user } = await supabase.auth.getUser();
+                const { data: usuario } = await supabase
+                    .from('usuarios')
+                    .select('id')
+                    .eq('auth_id', user.user.id)
+                    .single();
+
+                const { data, error } = await supabase
+                    .from('progresso_modulos_bonus')
+                    .select('*, modulos_bonus(nome, codigo)')
+                    .eq('usuario_id', usuario.id);
+
+                log('resultado-db', { count: data?.length, data, error });
+            } catch (error) {
+                log('resultado-db', { error: error.message });
+            }
+        }
+
+        async function verificarPontuacao() {
+            try {
+                const { data: user } = await supabase.auth.getUser();
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('nome_completo, email, pontuacao_total, updated_at')
+                    .eq('auth_id', user.user.id)
+                    .single();
+
+                log('resultado-db', { data, error });
+            } catch (error) {
+                log('resultado-db', { error: error.message });
+            }
+        }
+
+        // Auto-verificar ao carregar
+        window.addEventListener('load', async () => {
+            const { data: user } = await supabase.auth.getUser();
+            if (!user.user) {
+                document.body.innerHTML = '<h1>❌ Você precisa estar logado!</h1><p>Faça login no sistema primeiro.</p>';
+            }
+        });
+    </script>
+</body>
+
+</html>
