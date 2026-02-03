@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Controle de Módulos Bônus | Next Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen">
+    <!-- Header -->
+    <nav class="glass-panel border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-purple-400 text-3xl">admin_panel_settings</span>
+                    <h1 class="text-xl font-bold">Admin - Módulos Bônus</h1>
+                </div>
+                <a href="bonus.html" class="text-slate-400 hover:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-green-400 text-3xl">check_circle</span>
+                    <div>
+                        <p class="text-slate-400 text-sm">Publicados</p>
+                        <p id="stat-published" class="text-2xl font-bold text-green-400">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-red-400 text-3xl">cancel</span>
+                    <div>
+                        <p class="text-slate-400 text-sm">Despublicados</p>
+                        <p id="stat-unpublished" class="text-2xl font-bold text-red-400">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-blue-400 text-3xl">inventory_2</span>
+                    <div>
+                        <p class="text-slate-400 text-sm">Total</p>
+                        <p id="stat-total" class="text-2xl font-bold">28</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-panel rounded-xl p-6">
+                <button onclick="saveAll()"
+                    class="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
+                    💾 SALVAR TUDO
+                </button>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="glass-panel rounded-xl p-6 mb-8">
+            <h2 class="text-lg font-bold mb-4">Ações Rápidas</h2>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="publishAll()"
+                    class="bg-green-500/20 border-2 border-green-500/50 text-green-400 px-4 py-2 rounded-lg font-bold hover:bg-green-500/30">
+                    ✅ Publicar Todos
+                </button>
+                <button onclick="unpublishAll()"
+                    class="bg-red-500/20 border-2 border-red-500/50 text-red-400 px-4 py-2 rounded-lg font-bold hover:bg-red-500/30">
+                    ❌ Despublicar Todos
+                </button>
+                <button onclick="publishTemporada('all')"
+                    class="bg-blue-500/20 border-2 border-blue-500/50 text-blue-400 px-4 py-2 rounded-lg font-bold hover:bg-blue-500/30">
+                    📚 Publicar por Temporada
+                </button>
+            </div>
+        </div>
+
+        <!-- Lista de Módulos -->
+        <div class="glass-panel rounded-xl p-6">
+            <h2 class="text-lg font-bold mb-4">Gerenciar Visibilidade dos Módulos</h2>
+            <div id="modules-list" class="space-y-4"></div>
+        </div>
+    </main>
+
+    <script src="js/bonus-modules.js"></script>
+    <script>
+        // Carrega estado de publicação do localStorage
+        function loadPublishedState() {
+            const saved = localStorage.getItem('bonusModulesPublished');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            // Por padrão, todos publicados
+            const state = {};
+            window.BONUS_MODULES.forEach(m => state[m.codigo] = true);
+            return state;
+        }
+
+        // Salva estado
+        function savePublishedState(state) {
+            localStorage.setItem('bonusModulesPublished', JSON.stringify(state));
+            updateStats();
+        }
+
+        let publishedState = loadPublishedState();
+
+        // Renderiza lista de módulos
+        function renderModules() {
+            const container = document.getElementById('modules-list');
+            const byTemporada = {};
+
+            window.BONUS_MODULES.forEach(m => {
+                if (!byTemporada[m.temporada]) byTemporada[m.temporada] = [];
+                byTemporada[m.temporada].push(m);
+            });
+
+            const temporadaNomes = {
+                0: 'T0: Introdução',
+                1: 'T1: CX Avançado',
+                2: 'T2: IA Aplicada',
+                3: 'T3: Data-Driven',
+                4: 'T4: Python',
+                5: 'T5: Soft Skills',
+                6: 'T6: Ferramentas',
+                7: 'T7: Projetos',
+                8: 'T8: Futuro'
+            };
+
+            container.innerHTML = Object.keys(byTemporada).sort().map(t => `
+                <div class="border-l-4 border-purple-500 pl-4">
+                    <h3 class="font-bold mb-3">${temporadaNomes[t]}</h3>
+                    <div class="space-y-2">
+                        ${byTemporada[t].map(module => {
+                const isPublished = publishedState[module.codigo];
+                return `
+                                <div class="flex items-center justify-between bg-slate-900/50 rounded-lg p-3">
+                                    <div class="flex-1">
+                                        <p class="font-semibold">${module.nome}</p>
+                                        <p class="text-xs text-slate-400">${module.codigo} • ${module.pontos.facil}-${module.pontos.dificil} pts</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" 
+                                               ${isPublished ? 'checked' : ''} 
+                                               onchange="toggleModule('${module.codigo}')"
+                                               class="sr-only peer">
+                                        <div class="w-14 h-7 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500"></div>
+                                        <span class="ms-3 text-sm font-medium ${isPublished ? 'text-green-400' : 'text-slate-400'}">
+                                            ${isPublished ? 'Publicado' : 'Oculto'}
+                                        </span>
+                                    </label>
+                                </div>
+                            `;
+            }).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
+        }
+
+        function toggleModule(codigo) {
+            publishedState[codigo] = !publishedState[codigo];
+            savePublishedState(publishedState);
+            renderModules();
+        }
+
+        function publishAll() {
+            window.BONUS_MODULES.forEach(m => publishedState[m.codigo] = true);
+            savePublishedState(publishedState);
+            renderModules();
+        }
+
+        function unpublishAll() {
+            if (confirm('⚠️ Isso vai ocultar TODOS os módulos dos usuários. Confirma?')) {
+                window.BONUS_MODULES.forEach(m => publishedState[m.codigo] = false);
+                savePublishedState(publishedState);
+                renderModules();
+            }
+        }
+
+        function publishTemporada(temp) {
+            const temporada = prompt('Digite o número da temporada (0-8):');
+            if (temporada !== null) {
+                const t = parseInt(temporada);
+                window.BONUS_MODULES.filter(m => m.temporada === t).forEach(m => {
+                    publishedState[m.codigo] = true;
+                });
+                savePublishedState(publishedState);
+                renderModules();
+            }
+        }
+
+        function updateStats() {
+            const published = Object.values(publishedState).filter(v => v).length;
+            const total = window.BONUS_MODULES.length;
+            document.getElementById('stat-published').textContent = published;
+            document.getElementById('stat-unpublished').textContent = total - published;
+            document.getElementById('stat-total').textContent = total;
+        }
+
+        function saveAll() {
+            savePublishedState(publishedState);
+            alert('✅ Configurações salvas com sucesso!');
+        }
+
+        // Inicializa
+        renderModules();
+    </script>
+</body>
+
+</html>
