@@ -337,15 +337,28 @@
         }
 
         async function loadUserProgress() {
-            // Carregar módulos completados do banco
-            const progresso = await BonusService.getProgressoUsuario();
+            console.log('🔄 Carregando progresso do usuário...');
+            try {
+                // Carregar módulos completados do banco
+                const progresso = await BonusService.getProgressoUsuario();
+                console.log('📦 Progresso bruto recebido:', progresso);
 
-            completedModules.clear();
-            progresso.forEach(p => {
-                // Formato: moduloId_nivel (ex: "EP00A_ROI_facil")
-                const key = `${p.modulos_bonus.codigo}_${p.nivel}`;
-                completedModules.add(key);
-            });
+                completedModules.clear();
+                progresso.forEach(p => {
+                    if (p.modulos_bonus && p.modulos_bonus.codigo) {
+                        // Formato: moduloId_nivel (ex: "EP00A_ROI_facil")
+                        const key = `${p.modulos_bonus.codigo}_${p.nivel}`;
+                        completedModules.add(key);
+                        console.log('✅ Módulo carregado:', key);
+                    } else {
+                        console.warn('⚠️ Registro de progresso sem dados do módulo:', p);
+                    }
+                });
+                console.log('📚 Total de módulos completados (Set):', completedModules.size);
+            } catch (err) {
+                console.error('❌ Erro fatal ao carregar progresso:', err);
+                showToast('Erro ao carregar seu progresso. Tente recarregar.', 'error');
+            }
         }
 
         function filterByTemporada(temporada) {

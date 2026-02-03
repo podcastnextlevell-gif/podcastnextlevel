@@ -220,9 +220,16 @@ const BonusService = {
         try {
             const progresso = await this.getProgressoUsuario();
 
-            const completados = new Set(progresso.map(p => p.modulos_bonus.codigo)).size;
-            const pontos = progresso.reduce((sum, p) => sum + p.pontos_ganhos, 0);
-            const temporadas = new Set(progresso.map(p => p.modulos_bonus.temporada));
+            // Filtra registros válidos (previne erro se modulos_bonus vier nulo por falha de RLS)
+            const progressoValido = progresso.filter(p => p.modulos_bonus);
+
+            if (progresso.length > 0 && progressoValido.length === 0) {
+                console.error('⚠️ ALERTA CRÍTICO: Registros de progresso encontrados, mas sem dados do módulo (modulos_bonus é null). Verifique RLS da tabela modulos_bonus!');
+            }
+
+            const completados = new Set(progressoValido.map(p => p.modulos_bonus.codigo)).size;
+            const pontos = progressoValido.reduce((sum, p) => sum + p.pontos_ganhos, 0);
+            const temporadas = new Set(progressoValido.map(p => p.modulos_bonus.temporada));
 
             // Calcular nível médio
             const niveis = progresso.map(p => p.nivel);
