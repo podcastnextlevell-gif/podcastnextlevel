@@ -270,7 +270,7 @@
 
             <div class="mb-8">
                 <h3 class="text-sm font-bold text-slate-400 uppercase mb-3">Escolha o Nível de Dificuldade</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div id="modal-levels-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <button onclick="startModule('facil')"
                         class="module-level-btn bg-green-500/20 hover:bg-green-500/30 border-2 border-green-500/50 rounded-xl p-4 text-left transition-all group">
                         <div class="flex items-center justify-between mb-2">
@@ -473,6 +473,60 @@
             ).join('');
             document.getElementById('modal-tech').innerHTML = techHtml;
 
+            // Render Level Buttons Visually Locked if Completed
+            const levelsGrid = document.getElementById('modal-levels-grid');
+            const niveis = ['facil', 'intermediario', 'dificil'];
+            const nivelLabels = { facil: '⭐ FÁCIL', intermediario: '⭐⭐ MÉDIO', dificil: '⭐⭐⭐ DIFÍCIL' };
+            const nivelPontos = module.pontos || { facil: 5, intermediario: 10, dificil: 20 };
+            const nivelDesc = {
+                facil: 'Conceitos básicos e introdução',
+                intermediario: 'Recursos avançados e integração',
+                dificil: 'Desafio completo com IA e backend'
+            };
+            const nivelCores = {
+                facil: 'green',
+                intermediario: 'orange',
+                dificil: 'red'
+            };
+
+            levelsGrid.innerHTML = niveis.map(nivel => {
+                const isCompleted = completedModules.has(`${module.codigo}_${nivel}`);
+                const color = nivelCores[nivel];
+                const label = nivelLabels[nivel];
+                const pontos = nivelPontos[nivel];
+                const desc = nivelDesc[nivel];
+
+                if (isCompleted) {
+                    return `
+                        <button disabled
+                            class="bg-slate-800/50 border-2 border-slate-700 rounded-xl p-4 text-left opacity-60 cursor-not-allowed relative overflow-hidden">
+                            <div class="absolute inset-0 bg-slate-900/50"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-slate-400 font-bold">${label}</span>
+                                    <span class="text-green-500 font-bold flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">check_circle</span> 
+                                        FEITO
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-500">Você já completou este nível!</p>
+                            </div>
+                        </button>
+                    `;
+                } else {
+                    return `
+                        <button onclick="startModule('${nivel}')"
+                            class="module-level-btn bg-${color}-500/20 hover:bg-${color}-500/30 border-2 border-${color}-500/50 rounded-xl p-4 text-left transition-all group hover:scale-[1.02]">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-${color}-400 font-bold">${label}</span>
+                                <span class="text-${color}-400 text-2xl font-bold">${pontos} pts</span>
+                            </div>
+                            <p class="text-xs text-slate-400 group-hover:text-slate-200 transition-colors">${desc}</p>
+                        </button>
+                    `;
+                }
+            }).join('');
+
             document.getElementById('module-modal').classList.remove('hidden');
         }
 
@@ -484,61 +538,54 @@
         function startModule(nivel) {
             if (!currentModule) return;
 
-            // Módulos implementados (TODOS OS 28!)
+            // Mapeamento: Código do Banco -> Arquivo Físico
+            // Alinhado com fix_all_modules.py para garantir integridade
             const modulosImplementados = {
-                // T0 - INTRO
+                // T0
                 'EP00A_ROI': 'modulos-bonus/EP00A_calculadora_roi.html',
-                'EP00B_ROADMAP': 'modulos-bonus/EP00B_roadmap.html',
-                // T1 - CX AVANÇADO
-                'EP01_JORNADA': 'modulos-bonus/EP01_jornada.html',
-                'EP02_VOC': 'modulos-bonus/EP02_sentimento.html',
-                'EP03_METRICAS': 'modulos-bonus/EP03_metricas.html',
-                'EP04_OMNI': 'modulos-bonus/EP04_handoff.html',
-                'EP05_EMOCAO': 'modulos-bonus/EP05_script.html',
-                'EP06_PREDITIVO': 'modulos-bonus/EP06_churn.html',
-                // T2 - IA APLICADA
+                'EP00B_META': 'modulos-bonus/EP00B_roadmap.html',
+                // T1
+                'EP01_NPS': 'modulos-bonus/EP01_jornada.html',
+                'EP02_JORNADA': 'modulos-bonus/EP02_sentimento.html',
+                'EP03_VOC': 'modulos-bonus/EP03_metricas.html',
+                'EP04_CES': 'modulos-bonus/EP04_handoff.html',
+                'EP05_CHURN': 'modulos-bonus/EP05_script.html',
+                'EP06_SENTIMENTO': 'modulos-bonus/EP06_churn.html',
+                // T2
                 'EP07_CHATBOT': 'modulos-bonus/EP07_chatbot.html',
                 'EP08_ML_CHURN': 'modulos-bonus/EP08_ml_churn.html',
                 'EP09_RECOMENDADOR': 'modulos-bonus/EP09_recomendador.html',
-                // T3 - DATA-DRIVEN
+                // T3
                 'EP10_SQL': 'modulos-bonus/EP10_sql.html',
                 'EP11_ESTATISTICA': 'modulos-bonus/EP11_teste_ab.html',
                 'EP12_DASHBOARD': 'modulos-bonus/EP12_dashboard.html',
-                // T4 - PYTHON
+                // T4
                 'EP13_RELATORIOS': 'modulos-bonus/EP13_relatorios.html',
                 'EP14_SCRAPING': 'modulos-bonus/EP14_validador.html',
                 'EP15_NLP': 'modulos-bonus/EP15_scraping.html',
-                // T5 - SOFT SKILLS
+                // T5
                 'EP16_COMUNICACAO': 'modulos-bonus/EP16_comunicacao.html',
                 'EP17_LIDERANCA': 'modulos-bonus/EP17_negociacao.html',
                 'EP18_NEGOCIACAO': 'modulos-bonus/EP18_conflitos.html',
-                // T6 - FERRAMENTAS
+                // T6
                 'EP19_POWERBI': 'modulos-bonus/EP19_zendesk.html',
                 'EP20_NOCODE': 'modulos-bonus/EP20_powerbi.html',
                 'EP21_API': 'modulos-bonus/EP21_excel.html',
-                // T7 - PROJETOS
+                // T7
                 'EP22_PROJETO_CHURN': 'modulos-bonus/EP22_piloto.html',
                 'EP23_PROJETO_DASHBOARD': 'modulos-bonus/EP23_kaizen.html',
                 'EP24_PROJETO_FEEDBACK': 'modulos-bonus/EP24_business_case.html',
-                // T8 - FUTURO
+                // T8
                 'EP25_METAVERSO': 'modulos-bonus/EP25_ia_generativa.html',
                 'EP26_RA': 'modulos-bonus/EP26_futuro.html'
             };
 
-            console.log('Módulo atual:', currentModule.codigo);
-            console.log('Módulos implementados:', modulosImplementados);
-            console.log('Tem implementação?', modulosImplementados[currentModule.codigo]);
-
-            if (modulosImplementados[currentModule.codigo]) {
-                // Redirecionar para módulo real
-                const url = modulosImplementados[currentModule.codigo];
-                console.log('Redirecionando para:', url);
-                closeModal();
-                window.location.href = url;
+            const path = modulosImplementados[currentModule.codigo];
+            if (path) {
+                console.log('🚀 Iniciando módulo:', currentModule.codigo, '->', path);
+                window.location.href = path;
             } else {
-                // Mostrar modal de desenvolvimento
-                console.log('Módulo não implementado, mostrando modal de desenvolvimento');
-                closeModal();
+                console.warn('⚠️ Módulo sem arquivo mapeado:', currentModule.codigo);
                 showDevelopmentModal(currentModule, nivel);
             }
         }
