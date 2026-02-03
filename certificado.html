@@ -121,13 +121,13 @@
 
             <!-- Student Name -->
             <div class="relative mb-8 px-12 pb-2 border-b-2 border-slate-300 min-w-[500px]">
-                <h2 id="student-name" class="font-serif text-4xl font-bold text-slate-900 capitalize"></h2>
+                <h2 id="student-name" class="font-serif text-4xl font-bold text-slate-900 uppercase"></h2>
             </div>
 
             <p class="text-xl text-slate-600 mb-4 max-w-3xl leading-relaxed">
                 concluiu com êxito a temporada <strong id="course-name" class="text-slate-900"></strong>,
                 demonstrando domínio nos conceitos apresentados,
-                com carga horária estimada de <strong id="hours"></strong> horas.
+                com carga horária estimada de <strong>30 minutos</strong>.
             </p>
 
             <div class="mt-12 w-full flex justify-center items-end gap-16 px-20">
@@ -145,8 +145,8 @@
                 </div>
 
                 <div class="text-center">
+                    <p class="font-bold text-base uppercase tracking-wide mb-1">SAMUEL ROSA</p>
                     <div class="w-64 border-b border-slate-900 mb-2 mx-auto"></div>
-                    <p class="font-bold text-base uppercase tracking-wide">SAMUEL ROSA</p>
                     <p class="text-xs text-slate-500">Superintendente de Qualidade</p>
                 </div>
             </div>
@@ -200,7 +200,7 @@
 
                 document.getElementById('student-name').textContent = studentName;
                 document.getElementById('course-name').textContent = cert.temporadas?.titulo || 'Curso Next Level';
-                document.getElementById('hours').textContent = cert.carga_horaria || 1;
+                // Carga horária fixa em 30 minutos conforme solicitado
 
                 // Format Date
                 const date = new Date(cert.created_at || cert.data_conclusao);
