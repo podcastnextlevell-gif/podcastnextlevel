@@ -257,6 +257,7 @@
 
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/bonus-modules.js"></script>
     <script>
         // State
         let userProfile = null;
@@ -592,6 +593,9 @@
 
             if (error) console.error('Erro ao salvar progresso:', error);
 
+            // 🎁 Verificar se desbloqueou algum módulo bônus
+            checkBonusUnlock(ep.id);
+
             renderPlaylist();
 
             if (currentTrackIndex < episodios.length - 1) {
@@ -600,6 +604,37 @@
                 isPlaying = false;
                 updatePlayButton();
                 document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Verifica se o episódio completado desbloqueia módulos bônus
+        async function checkBonusUnlock(episodioId) {
+            try {
+                // Buscar template_id do episódio completado
+                const { data: epData } = await supabaseClient
+                    .from('episodios')
+                    .select('template_id')
+                    .eq('id', episodioId)
+                    .single();
+
+                if (!epData?.template_id) return;
+
+                const templateId = epData.template_id;
+                const modules = window.BONUS_MODULES || [];
+
+                // Encontrar módulos bônus desbloqueados por este episódio
+                const unlocked = modules.filter(m => m.episodio_prerequisito === templateId);
+
+                if (unlocked.length > 0) {
+                    unlocked.forEach(m => {
+                        setTimeout(() => {
+                            showToast(`🎁 Módulo Bônus desbloqueado: "${m.nome}"! Acesse em Bônus para praticar.`, 'success');
+                        }, 1500);
+                    });
+                    console.log('🎁 Módulos desbloqueados:', unlocked.map(m => m.codigo));
+                }
+            } catch (err) {
+                console.error('Erro ao verificar desbloqueio bônus:', err);
             }
         }
 

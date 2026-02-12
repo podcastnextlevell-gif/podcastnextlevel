@@ -316,6 +316,7 @@
     <script>
         let userProfile = null;
         let completedModules = new Set();
+        let completedEpisodes = new Set(); // Códigos (template_id) dos episódios completados
         let currentFilter = 'all';
         let currentModule = null;
 
@@ -331,7 +332,10 @@
                 document.getElementById('admin-link').classList.remove('hidden');
             }
 
-            await loadUserProgress();
+            await Promise.all([
+                loadUserProgress(),
+                loadEpisodeProgress()
+            ]);
             renderModules();
             updateStats();
         }
@@ -459,9 +463,52 @@
         }
 
         function checkModuleUnlocked(module) {
-            // TODO: Verificar se usuário completou episódio pré-requisito
-            // Por enquanto, retorna true para todos
-            return true;
+            // Verifica se o episódio pré-requisito foi completado
+            if (!module.episodio_prerequisito) return true;
+            return completedEpisodes.has(module.episodio_prerequisito);
+        }
+
+        // Carrega episódios completados pelo usuário (com template_id)
+        async function loadEpisodeProgress() {
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) return;
+
+                const { data: usuario } = await supabaseClient
+                    .from('usuarios')
+                    .select('id')
+                    .eq('auth_id', user.id)
+                    .single();
+
+                if (!usuario) return;
+
+                // Buscar episódios completados com template_id
+                const { data: progresso, error } = await supabaseClient
+                    .from('progresso_usuario')
+                    .select(`
+                        episodio_id,
+                        completado,
+                        episodios!inner (template_id)
+                    `)
+                    .eq('usuario_id', usuario.id)
+                    .eq('completado', true);
+
+                if (error) {
+                    console.error('❌ Erro ao carregar progresso de episódios:', error);
+                    return;
+                }
+
+                completedEpisodes.clear();
+                (progresso || []).forEach(p => {
+                    if (p.episodios && p.episodios.template_id) {
+                        completedEpisodes.add(p.episodios.template_id);
+                    }
+                });
+
+                console.log('🔓 Episódios completados:', [...completedEpisodes]);
+            } catch (err) {
+                console.error('❌ Erro ao carregar progresso de episódios:', err);
+            }
         }
 
         function showLockedMessage(episodio) {
